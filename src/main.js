@@ -41,15 +41,17 @@ setProgress(0.02);
 
 /* ---------------- son : récitation (une fois) ou musique (en boucle) ---------------- */
 const audio = $('#music');
-let audioReady = false, gainNode = null, actx = null, muted = false, finished = false;
+let muted = false, finished = false;
+// l'iPhone ignore audio.volume : on le détecte pour ne pas compter sur un fondu
+const volOK = (() => { try { const a = document.createElement('audio'); a.volume = 0.5; return Math.abs(a.volume - 0.5) < 0.01; } catch (e) { return false; } })();
 const SON = CONFIG.recitation || CONFIG.musique;
 const isRecit = !!CONFIG.recitation;
 const targetVol = CONFIG.volume ?? 0.55;
 audio.loop = !isRecit;
 if (SON) {
-  audio.addEventListener('loadedmetadata', () => { audioReady = true; $('.sound-hint').hidden = false; }, { once: true });
-  audio.addEventListener('error', () => { audioReady = false; $('.sound-hint').hidden = true; $('#sound').hidden = true; }, { once: true });
-  audio.src = SON; audio.load();
+  $('.sound-hint').hidden = false; // affichée d'emblée : l'iPhone ne précharge pas l'audio avant un toucher
+  audio.addEventListener('error', () => { $('.sound-hint').hidden = true; $('#sound').hidden = true; }, { once: true });
+  audio.src = SON;
 }
 // à la fin de la récitation : le bouton passe en « réécouter »
 audio.addEventListener('ended', () => {
@@ -58,24 +60,26 @@ audio.addEventListener('ended', () => {
   $('#sound').classList.add('off'); $('#sound').setAttribute('aria-label', 'Réécouter la récitation');
 });
 const volObj = { v: 0 };
-function applyVol() { if (gainNode) gainNode.gain.value = volObj.v; else audio.volume = Math.min(1, volObj.v); }
+function applyVol() { if (volOK) audio.volume = Math.min(1, Math.max(0, volObj.v)); }
 function startMusic() {
   if (!SON || audio.error) return;
-  try { // Web Audio : le volume HTML est ignoré sur iPhone, le gain non
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (AC && !actx) { actx = new AC(); const src = actx.createMediaElementSource(audio); gainNode = actx.createGain(); gainNode.gain.value = 0; src.connect(gainNode).connect(actx.destination); }
-    actx && actx.resume();
-  } catch (e) { gainNode = null; }
-  volObj.v = 0; applyVol();
+  // lecture directe par l'élément audio (pas de Web Audio) : sur iPhone, Web Audio est coupé par le bouton silencieux
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  volObj.v = volOK ? 0 : targetVol; applyVol();
   const p = audio.play();
-  if (p) p.then(() => { $('#sound').hidden = false; gsap.to(volObj, { v: targetVol, duration: isRecit ? 1.5 : 5, ease: 'sine.inOut', onUpdate: applyVol }); }).catch(() => {});
+  const ok = () => { $('#sound').hidden = false; if (volOK) gsap.to(volObj, { v: targetVol, duration: isRecit ? 1.5 : 5, ease: 'sine.inOut', onUpdate: applyVol }); };
+  // si le navigateur refuse la lecture, le bouton son apparaît éteint : un toucher dessus la lance
+  const ko = () => { muted = true; $('#sound').hidden = false; $('#sound').classList.add('off'); $('#sound').setAttribute('aria-label', 'Écouter la récitation'); };
+  if (p && p.then) p.then(ok).catch(ko); else ok();
 }
 $('#sound').addEventListener('click', () => {
   if (finished) { finished = false; audio.currentTime = 0; } // réécouter depuis le début
   muted = !muted; $('#sound').classList.toggle('off', muted);
   $('#sound').setAttribute('aria-label', muted ? 'Remettre le son' : 'Couper le son');
-  gsap.to(volObj, { v: muted ? 0 : targetVol, duration: 1.2, ease: 'sine.inOut', onUpdate: applyVol,
-    onStart() { if (!muted) audio.play().catch(() => {}); }, onComplete() { if (muted) audio.pause(); } });
+  gsap.killTweensOf(volObj);
+  if (!muted) { if (!volOK) volObj.v = targetVol; audio.play().catch(() => {}); }
+  if (volOK) gsap.to(volObj, { v: muted ? 0 : targetVol, duration: 1, ease: 'sine.inOut', onUpdate: applyVol, onComplete() { if (muted) audio.pause(); } });
+  else if (muted) audio.pause();
 });
 document.addEventListener('visibilitychange', () => {
   if (!audio.src || muted || finished || audio.paused === document.hidden) return;
