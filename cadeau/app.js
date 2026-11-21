@@ -2,13 +2,10 @@
   "use strict";
 
   var C = window.CADEAU || {};
-  var CODE = String(C.code || "").replace(/\D/g, "");
-  var LONGUEUR = Math.min(Math.max(CODE.length, 4), 6);
-  var saisie = "";
-  var bloque = false;
-
+  var S = window.Sons;
   function $(id) { return document.getElementById(id); }
   function texte(id, valeur) { var el = $(id); if (el) el.textContent = valeur || ""; }
+  function vibrer(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
 
   /* ---------- Cœurs qui flottent ---------- */
   var ciel = document.querySelector(".sky");
@@ -22,13 +19,67 @@
     ciel.appendChild(h);
   }
 
-  /* ---------- Écran du cadenas ---------- */
+  /* ---------- Bouton son ---------- */
+  var boutonSon = $("son");
+  function majSon() {
+    var on = S.estActif();
+    boutonSon.textContent = on ? "🔊" : "🔇";
+    boutonSon.setAttribute("aria-pressed", String(on));
+    boutonSon.setAttribute("aria-label", on ? "Couper le son" : "Remettre le son");
+  }
+  boutonSon.addEventListener("click", function () { S.basculer(); majSon(); S.touche(); });
+  majSon();
+
+  /* ---------- Passage d'un écran à l'autre ---------- */
+  function allerA(id) {
+    var actuel = document.querySelector(".ecran.actif");
+    var suivant = $(id);
+    S.page();
+    if (actuel) actuel.classList.add("sort");
+    setTimeout(function () {
+      if (actuel) { actuel.hidden = true; actuel.classList.remove("actif", "sort", "entre"); }
+      suivant.hidden = false;
+      suivant.classList.add("actif", "entre");
+      window.scrollTo(0, 0);
+      var titre = suivant.querySelector("h2");
+      if (titre) titre.focus({ preventScroll: true });
+    }, actuel ? 420 : 0);
+  }
+  document.querySelectorAll(".suivant").forEach(function (b) {
+    b.addEventListener("click", function () { allerA(b.dataset.vers); });
+  });
+
+  function eclat(x, y, nombre, portee) {
+    for (var n = 0; n < nombre; n++) {
+      var s = document.createElement("span");
+      s.className = "eclat";
+      s.textContent = Math.random() < .25 ? "✦" : "❤";
+      if (s.textContent === "✦") s.style.color = "#f4c34f";
+      var a = Math.random() * Math.PI * 2, d = portee * (0.4 + Math.random() * 0.6);
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      s.style.fontSize = 12 + Math.random() * 16 + "px";
+      s.style.setProperty("--x", Math.cos(a) * d + "px");
+      s.style.setProperty("--y", Math.sin(a) * d + "px");
+      document.body.appendChild(s);
+      setTimeout(s.remove.bind(s), 1200);
+    }
+  }
+  function centreDe(el) {
+    var r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  /* ---------- 1. Le code ---------- */
+  var CODE = String(C.code || "").replace(/\D/g, "");
+  var LONGUEUR = Math.min(Math.max(CODE.length, 4), 6);
+  var saisie = "", bloque = false;
+
   texte("verrou-pour", C.pour ? "Pour " + C.pour : "");
   texte("indice", C.indice);
 
   var points = $("points");
   for (var p = 0; p < LONGUEUR; p++) points.appendChild(document.createElement("i"));
-
   function afficherPoints() {
     var dots = points.children;
     for (var k = 0; k < dots.length; k++) dots[k].classList.toggle("plein", k < saisie.length);
@@ -45,14 +96,12 @@
     else { b.textContent = t; b.dataset.k = t; }
     clavier.appendChild(b);
   });
-
   clavier.addEventListener("click", function (e) {
     var b = e.target.closest(".touche");
     if (b && b.dataset.k) appuyer(b.dataset.k);
   });
-
   document.addEventListener("keydown", function (e) {
-    if (!$("cadeau").hidden) return;
+    if (!$("e-code").classList.contains("actif")) return;
     var k = /^[0-9]$/.test(e.key) ? e.key : (e.key === "Backspace" ? "effacer" : null);
     if (!k) return;
     e.preventDefault();
@@ -63,8 +112,10 @@
 
   function appuyer(k) {
     if (bloque) return;
-    if (k === "effacer") { saisie = saisie.slice(0, -1); afficherPoints(); return; }
+    if (k === "effacer") { if (saisie) S.effacer(); saisie = saisie.slice(0, -1); afficherPoints(); return; }
     if (saisie.length >= LONGUEUR) return;
+    S.touche();
+    vibrer(12);
     saisie += k;
     texte("message", "");
     afficherPoints();
@@ -72,16 +123,19 @@
   }
 
   function verifier() {
+    bloque = true;
     if (saisie === CODE) {
-      bloque = true;
       texte("message", "C'est ouvert ❤");
-      demarrerMusique(); // appelé pendant l'appui : les navigateurs autorisent le son
-      ouvrir();
+      setTimeout(S.ouvert, 120);
+      vibrer([30, 40, 60]);
+      $("e-code").classList.add("ouvert");
+      eclat(window.innerWidth / 2, window.innerHeight * 0.25, 26, 260);
+      setTimeout(function () { allerA("e-photos"); }, 700);
     } else {
-      bloque = true;
+      S.erreur();
+      vibrer(150);
       points.classList.add("secoue");
       texte("message", "Ce n'est pas le bon code, réessaie 💔");
-      if (navigator.vibrate) navigator.vibrate(120);
       setTimeout(function () {
         points.classList.remove("secoue");
         saisie = "";
@@ -91,40 +145,9 @@
     }
   }
 
-  function eclat() {
-    var cx = window.innerWidth / 2, cy = window.innerHeight * 0.3;
-    for (var n = 0; n < 26; n++) {
-      var s = document.createElement("span");
-      s.className = "eclat";
-      s.textContent = "❤";
-      var a = Math.random() * Math.PI * 2, d = 90 + Math.random() * 180;
-      s.style.left = cx + "px";
-      s.style.top = cy + "px";
-      s.style.setProperty("--x", Math.cos(a) * d + "px");
-      s.style.setProperty("--y", Math.sin(a) * d + "px");
-      document.body.appendChild(s);
-      setTimeout(s.remove.bind(s), 1200);
-    }
-  }
-
-  function ouvrir() {
-    var verrou = $("verrou");
-    verrou.classList.add("ouvert");
-    eclat();
-    setTimeout(function () {
-      verrou.hidden = true;
-      $("cadeau").hidden = false;
-      window.scrollTo(0, 0);
-      var titre = $("titre");
-      titre.setAttribute("tabindex", "-1");
-      titre.focus({ preventScroll: true });
-    }, 650);
-  }
-
-  /* ---------- Contenu du cadeau ---------- */
-  texte("intro-pour", C.pour ? "Pour " + C.pour : "");
-  texte("titre", C.titre || "Une surprise pour toi");
-
+  /* ---------- 2. Les photos ---------- */
+  texte("photos-pour", C.pour ? "Pour " + C.pour : "");
+  texte("t-photos", C.photosTitre || "Nos souvenirs");
   var galerie = $("galerie"), reperes = $("reperes");
   (C.photos || []).forEach(function (ph, idx) {
     var fig = document.createElement("figure");
@@ -132,7 +155,7 @@
     var img = document.createElement("img");
     img.src = ph.src;
     img.alt = ph.legende || "Photo " + (idx + 1);
-    img.loading = idx === 0 ? "eager" : "lazy";
+    img.loading = idx < 2 ? "eager" : "lazy";
     fig.appendChild(img);
     if (ph.legende) {
       var cap = document.createElement("figcaption");
@@ -142,8 +165,7 @@
     galerie.appendChild(fig);
     reperes.appendChild(document.createElement("i"));
   });
-  if (!galerie.children.length) galerie.closest(".bloc").hidden = true;
-
+  var dernierRepere = -1;
   function majReperes() {
     var cartes = galerie.children;
     if (!cartes.length) return;
@@ -152,35 +174,14 @@
       var c = cartes[j], dist = Math.abs(c.offsetLeft + c.offsetWidth / 2 - milieu);
       if (dist < best) { best = dist; actif = j; }
     }
+    if (actif !== dernierRepere && dernierRepere !== -1) S.touche();
+    dernierRepere = actif;
     for (var r = 0; r < reperes.children.length; r++) reperes.children[r].classList.toggle("actif", r === actif);
   }
   galerie.addEventListener("scroll", majReperes, { passive: true });
   majReperes();
 
-  // Chanson
-  var ch = C.chanson || {};
-  var audio = $("audio"), lecture = $("lecture"), vinyle = $("vinyle");
-  texte("chanson-titre", ch.titre);
-  texte("chanson-artiste", ch.artiste);
-  if (ch.fichier) { audio.src = ch.fichier; lecture.hidden = false; }
-  if (ch.lien) { var lien = $("chanson-lien"); lien.href = ch.lien; lien.hidden = false; }
-  if (!ch.fichier && !ch.lien && !ch.titre) lecture.closest(".bloc").hidden = true;
-
-  function majLecteur() {
-    var joue = !audio.paused;
-    vinyle.classList.toggle("joue", joue);
-    lecture.textContent = joue ? "❚❚ Pause" : "▶ Écouter";
-  }
-  function demarrerMusique() {
-    if (!ch.fichier) return;
-    var promesse = audio.play();
-    if (promesse && promesse.catch) promesse.catch(function () { /* l'utilisateur pourra appuyer sur Écouter */ });
-  }
-  lecture.addEventListener("click", function () { audio.paused ? audio.play() : audio.pause(); });
-  audio.addEventListener("play", majLecteur);
-  audio.addEventListener("pause", majLecteur);
-
-  // Lettre
+  /* ---------- 3. La lettre ---------- */
   texte("lettre-pour", C.pour ? C.pour + "," : "");
   var corps = $("lettre-texte");
   (C.lettre || []).forEach(function (para) {
@@ -193,11 +194,107 @@
 
   var enveloppe = $("enveloppe");
   enveloppe.addEventListener("click", function () {
+    var c = centreDe(enveloppe);
+    S.papier();
+    vibrer(20);
     enveloppe.hidden = true;
     enveloppe.setAttribute("aria-expanded", "true");
     $("lettre").hidden = false;
-    eclat();
+    $("apres-lettre").hidden = false;
+    eclat(c.x, c.y, 18, 160);
   });
 
-  texte("fin", C.fin);
+  /* ---------- 4. Le cadeau ---------- */
+  var APPUIS = Math.max(1, parseInt(C.appuis, 10) || 5);
+  var faits = 0, ouvert = false;
+  var boite = $("boite"), couvercle = $("couvercle"), jauge = $("jauge"), consigne = $("consigne");
+  var relances = ["Encore !", "Plus fort…", "Ça bouge…", "Continue…"];
+  texte("t-cadeau", C.cadeauTitre || "Une dernière surprise…");
+
+  boite.addEventListener("click", function () {
+    if (ouvert) return;
+    faits++;
+    var reste = APPUIS - faits;
+    S.appui(faits);
+    vibrer(25 + faits * 12);
+    boite.style.setProperty("--force", String(1 + faits * 0.45));
+    boite.classList.remove("tape");
+    void boite.getBoundingClientRect(); // relance l'animation
+    boite.classList.add("tape");
+    var cote = faits % 2 ? -1 : 1;
+    couvercle.style.transform = "translateY(" + (-faits * 5) + "px) rotate(" + (cote * faits * 1.6) + "deg)";
+    jauge.style.width = Math.round((faits / APPUIS) * 100) + "%";
+    var c = centreDe(boite);
+    eclat(c.x, c.y - 40, 4 + faits * 2, 90 + faits * 25);
+
+    if (reste <= 0) return ouvrirCadeau();
+    consigne.textContent = reste === 1 ? "Encore une fois !" : relances[(faits - 1) % relances.length];
+  });
+
+  function ouvrirCadeau() {
+    ouvert = true;
+    consigne.textContent = "";
+    S.magie();
+    vibrer([40, 50, 80]);
+    boite.classList.remove("tape");
+    boite.classList.add("ouverte");
+    var c = centreDe(boite);
+    eclat(c.x, c.y - 60, 40, 320);
+    setTimeout(function () { boite.classList.add("disparait"); }, 50);
+    setTimeout(function () {
+      $("avant").hidden = true;
+      $("demande").hidden = false;
+      window.scrollTo(0, 0);
+      S.bague();
+      $("question").focus({ preventScroll: true });
+    }, 1250);
+  }
+
+  /* ---------- 5. La demande ---------- */
+  texte("demande-pour", C.pour || "");
+  texte("question", C.question || "Veux-tu m'épouser ?");
+  var reponses = $("reponses");
+  (C.boutons && C.boutons.length ? C.boutons : ["Oui 💍"]).forEach(function (libelle) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn";
+    b.textContent = libelle;
+    b.addEventListener("click", direOui);
+    reponses.appendChild(b);
+  });
+  texte("apres-oui-texte", C.apresOui);
+  var numero = String(C.whatsapp || "").replace(/\D/g, "");
+  if (numero) {
+    var wa = $("whatsapp");
+    wa.href = "https://wa.me/" + numero + "?text=" + encodeURIComponent(C.messageWhatsapp || "OUI 💍");
+    wa.hidden = false;
+  }
+
+  function direOui() {
+    S.oui();
+    vibrer([60, 60, 60, 60, 200]);
+    reponses.hidden = true;
+    $("apres-oui").hidden = false;
+    var b = centreDe($("question"));
+    eclat(b.x, b.y, 50, 340);
+    confettis(160);
+    setTimeout(function () { confettis(90); eclat(window.innerWidth / 2, window.innerHeight * 0.4, 30, 300); }, 1400);
+  }
+
+  function confettis(nombre) {
+    var couleurs = ["#ff5c8a", "#f4c34f", "#ffb3c7", "#ffffff", "#c2185b", "#ffe7a3"];
+    for (var n = 0; n < nombre; n++) {
+      var f = document.createElement("i");
+      f.className = "confetti";
+      f.style.left = Math.random() * 100 + "vw";
+      f.style.background = couleurs[n % couleurs.length];
+      f.style.setProperty("--dx", (Math.random() * 160 - 80) + "px");
+      f.style.setProperty("--r", (Math.random() * 900 - 450) + "deg");
+      f.style.animationDuration = 2.4 + Math.random() * 2.2 + "s";
+      f.style.animationDelay = Math.random() * 0.6 + "s";
+      if (Math.random() < .4) f.style.borderRadius = "50%";
+      document.body.appendChild(f);
+      setTimeout(f.remove.bind(f), 5500);
+    }
+  }
 })();

@@ -1,0 +1,111 @@
+/* Bruitages fabriqués en direct par le navigateur (Web Audio) : aucun fichier son,
+   donc aucune musique protégée. */
+window.Sons = (function () {
+  "use strict";
+  var ctx = null;
+  function lire() { try { return localStorage.getItem("cadeau-son"); } catch (e) { return null; } }
+  function ecrire(v) { try { localStorage.setItem("cadeau-son", v); } catch (e) { /* navigation privée */ } }
+  var actif = lire() !== "off";
+
+  function audio() {
+    if (!actif) return null;
+    if (!ctx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      // Safari récent : demande à jouer le son même si l'iPhone est en mode silencieux
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) { /* non pris en charge */ }
+      ctx = new AC();
+    }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+
+  // Une note avec une enveloppe douce
+  function note(freq, debut, duree, o) {
+    var a = audio(); if (!a) return;
+    o = o || {};
+    var t = a.currentTime + (debut || 0);
+    var osc = a.createOscillator(), g = a.createGain();
+    osc.type = o.type || "sine";
+    osc.frequency.setValueAtTime(freq, t);
+    if (o.vers) osc.frequency.exponentialRampToValueAtTime(o.vers, t + duree);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(o.vol || 0.15, t + (o.attaque || 0.008));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    osc.connect(g).connect(a.destination);
+    osc.start(t);
+    osc.stop(t + duree + 0.05);
+  }
+
+  // Un souffle (bruit filtré) : papier, vent, frottement
+  function souffle(debut, duree, o) {
+    var a = audio(); if (!a) return;
+    o = o || {};
+    var t = a.currentTime + (debut || 0);
+    var n = Math.floor(a.sampleRate * duree);
+    var buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var src = a.createBufferSource(); src.buffer = buf;
+    var f = a.createBiquadFilter();
+    f.type = o.filtre || "bandpass";
+    f.frequency.setValueAtTime(o.de || 800, t);
+    if (o.vers) f.frequency.exponentialRampToValueAtTime(o.vers, t + duree);
+    var g = a.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(o.vol || 0.12, t + duree * 0.3);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    src.connect(f).connect(g).connect(a.destination);
+    src.start(t);
+  }
+
+  // Cloche : plusieurs harmoniques qui s'éteignent doucement
+  function cloche(freq, debut, vol) {
+    note(freq, debut, 1.6, { vol: vol, attaque: 0.004 });
+    note(freq * 2.01, debut, 1.1, { vol: vol * 0.45, attaque: 0.004 });
+    note(freq * 3.02, debut, 0.7, { vol: vol * 0.2, attaque: 0.004 });
+  }
+
+  return {
+    touche: function () { note(1046, 0, 0.09, { type: "triangle", vol: 0.12 }); },
+    effacer: function () { note(660, 0, 0.08, { type: "triangle", vol: 0.08, vers: 520 }); },
+    erreur: function () {
+      note(311, 0, 0.18, { type: "square", vol: 0.05, vers: 233 });
+      note(233, 0.16, 0.28, { type: "square", vol: 0.05, vers: 175 });
+    },
+    ouvert: function () {
+      [523, 659, 784, 1047].forEach(function (f, i) { note(f, i * 0.09, 0.45, { type: "triangle", vol: 0.12 }); });
+      cloche(2093, 0.36, 0.05);
+    },
+    page: function () { souffle(0, 0.45, { de: 400, vers: 2400, vol: 0.07 }); },
+    papier: function () {
+      souffle(0, 0.22, { filtre: "highpass", de: 2500, vol: 0.1 });
+      souffle(0.18, 0.3, { filtre: "highpass", de: 3500, vol: 0.08 });
+    },
+    // n = numéro de l'appui : le son monte à chaque fois
+    appui: function (n) {
+      note(110 + n * 22, 0, 0.22, { vol: 0.35, vers: 60 });
+      souffle(0, 0.1, { de: 900, vol: 0.12 });
+      note(1568 + n * 180, 0.04, 0.25, { type: "triangle", vol: 0.05 });
+    },
+    magie: function () {
+      souffle(0, 1.2, { de: 600, vers: 6000, vol: 0.06 });
+      for (var i = 0; i < 18; i++) {
+        note(1200 + Math.random() * 1800, 0.05 + i * 0.06, 0.35, { type: "sine", vol: 0.05 });
+      }
+    },
+    bague: function () { cloche(1318.5, 0, 0.12); cloche(1975.5, 0.18, 0.08); cloche(2637, 0.36, 0.05); },
+    oui: function () {
+      var gamme = [523, 659, 784, 1047, 1319, 1568];
+      gamme.forEach(function (f, i) { note(f, i * 0.08, 0.5, { type: "triangle", vol: 0.1 }); });
+      [523, 659, 784, 1047].forEach(function (f) { note(f, 0.55, 1.6, { type: "triangle", vol: 0.07 }); });
+      cloche(2093, 0.55, 0.06);
+    },
+    estActif: function () { return actif; },
+    basculer: function () {
+      actif = !actif;
+      ecrire(actif ? "on" : "off");
+      if (!actif && ctx) ctx.suspend();
+      return actif;
+    }
+  };
+})();

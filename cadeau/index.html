@@ -15,8 +15,10 @@
 <body>
 <div class="sky" aria-hidden="true"></div>
 
-<!-- Écran du cadenas -->
-<section id="verrou" class="verrou" aria-labelledby="verrou-titre">
+<button type="button" class="son" id="son" aria-pressed="true" aria-label="Couper le son">🔊</button>
+
+<!-- 1. Le code -->
+<section id="e-code" class="ecran verrou actif" aria-labelledby="verrou-titre">
   <div class="cadenas" aria-hidden="true">
     <svg viewBox="0 0 120 120">
       <path class="anse" d="M40 52V38a20 20 0 0 1 40 0v14" fill="none" stroke-width="9" stroke-linecap="round"/>
@@ -33,58 +35,102 @@
   <div class="clavier" id="clavier"></div>
 </section>
 
-<!-- Le cadeau, caché tant que le code n'est pas bon -->
-<main id="cadeau" class="cadeau" hidden>
-  <section class="intro">
-    <p class="petit" id="intro-pour"></p>
-    <h2 class="script" id="titre"></h2>
-    <p class="defiler">Fais défiler <span aria-hidden="true">↓</span></p>
-  </section>
+<!-- 2. Les photos -->
+<section id="e-photos" class="ecran" aria-labelledby="t-photos" hidden>
+  <p class="petit" id="photos-pour"></p>
+  <h2 class="script" id="t-photos" tabindex="-1"></h2>
+  <div class="galerie" id="galerie" tabindex="0" aria-label="Photos, fais glisser pour voir la suite"></div>
+  <div class="reperes" id="reperes" aria-hidden="true"></div>
+  <button type="button" class="btn suivant" data-vers="e-lettre">Continuer <span aria-hidden="true">→</span></button>
+</section>
 
-  <section class="bloc" aria-labelledby="t-photos">
-    <h3 id="t-photos"><span aria-hidden="true">📸</span> Nos souvenirs</h3>
-    <div class="galerie" id="galerie" tabindex="0" aria-label="Photos, fais glisser pour voir la suite"></div>
-    <div class="reperes" id="reperes" aria-hidden="true"></div>
-  </section>
+<!-- 3. La lettre -->
+<section id="e-lettre" class="ecran" aria-labelledby="t-lettre" hidden>
+  <h2 class="script" id="t-lettre" tabindex="-1">Une lettre pour toi</h2>
+  <button type="button" class="enveloppe" id="enveloppe" aria-expanded="false" aria-controls="lettre">
+    <span class="rabat" aria-hidden="true"></span>
+    <span class="sceau" aria-hidden="true">❤</span>
+    <span class="ouvrir">Touche pour ouvrir</span>
+  </button>
+  <article class="lettre" id="lettre" hidden>
+    <p class="lettre-pour" id="lettre-pour"></p>
+    <div id="lettre-texte"></div>
+    <p class="signature script" id="signature"></p>
+    <p class="de" id="de"></p>
+  </article>
+  <button type="button" class="btn suivant" id="apres-lettre" data-vers="e-cadeau" hidden>Continuer <span aria-hidden="true">→</span></button>
+</section>
 
-  <section class="bloc" aria-labelledby="t-chanson">
-    <h3 id="t-chanson"><span aria-hidden="true">🎶</span> Notre chanson</h3>
-    <div class="lecteur">
-      <div class="vinyle" id="vinyle" aria-hidden="true"><span></span></div>
-      <div class="infos">
-        <p class="chanson-titre" id="chanson-titre"></p>
-        <p class="chanson-artiste" id="chanson-artiste"></p>
-        <div class="actions">
-          <button type="button" class="btn" id="lecture" hidden>▶ Écouter</button>
-          <a class="btn btn-clair" id="chanson-lien" target="_blank" rel="noopener" hidden>Ouvrir la chanson ↗</a>
-        </div>
-      </div>
-    </div>
-    <audio id="audio" preload="none" loop></audio>
-  </section>
-
-  <section class="bloc" aria-labelledby="t-lettre">
-    <h3 id="t-lettre"><span aria-hidden="true">💌</span> Une lettre pour toi</h3>
-    <button type="button" class="enveloppe" id="enveloppe" aria-expanded="false" aria-controls="lettre">
-      <span class="rabat" aria-hidden="true"></span>
-      <span class="sceau" aria-hidden="true">❤</span>
-      <span class="ouvrir">Touche pour ouvrir</span>
+<!-- 4. Le cadeau, puis la demande -->
+<section id="e-cadeau" class="ecran ecran-cadeau" aria-labelledby="t-cadeau" hidden>
+  <div id="avant">
+    <h2 class="script" id="t-cadeau" tabindex="-1"></h2>
+    <p class="consigne" id="consigne" aria-live="polite">Appuie sur le cadeau</p>
+    <button type="button" class="boite" id="boite" aria-label="Ouvrir le cadeau">
+      <svg viewBox="0 0 220 230" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-boite" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ff6f96"/><stop offset="1" stop-color="#c2185b"/>
+          </linearGradient>
+          <linearGradient id="g-ruban" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#ffe7a3"/><stop offset=".5" stop-color="#f4c34f"/><stop offset="1" stop-color="#d79b20"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="110" cy="222" rx="80" ry="7" fill="#000" opacity=".25"/>
+        <rect x="30" y="105" width="160" height="115" rx="8" fill="url(#g-boite)"/>
+        <rect x="30" y="105" width="160" height="16" fill="#000" opacity=".12"/>
+        <rect x="99" y="105" width="22" height="115" fill="url(#g-ruban)"/>
+        <g id="couvercle">
+          <rect x="20" y="78" width="180" height="34" rx="7" fill="url(#g-boite)"/>
+          <rect x="99" y="78" width="22" height="34" fill="url(#g-ruban)"/>
+          <path d="M110 78c-14-30-56-34-52-10 3 16 34 14 52 10z" fill="url(#g-ruban)"/>
+          <path d="M110 78c14-30 56-34 52-10-3 16-34 14-52 10z" fill="url(#g-ruban)"/>
+          <path d="M110 78c-8 8-16 24-24 34M110 78c8 8 16 24 24 34" stroke="#d79b20" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <circle cx="110" cy="76" r="9" fill="#f4c34f"/>
+        </g>
+      </svg>
     </button>
-    <article class="lettre" id="lettre" hidden>
-      <p class="lettre-pour" id="lettre-pour"></p>
-      <div id="lettre-texte"></div>
-      <p class="signature script" id="signature"></p>
-      <p class="de" id="de"></p>
-    </article>
-  </section>
+    <div class="jauge" aria-hidden="true"><i id="jauge"></i></div>
+  </div>
 
-  <section class="fin">
-    <div class="gros-coeur" aria-hidden="true">❤</div>
-    <p class="script" id="fin"></p>
-  </section>
-</main>
+  <div id="demande" class="demande" hidden>
+    <div class="rayons" aria-hidden="true"></div>
+    <div class="bague" aria-hidden="true">
+      <svg viewBox="0 0 200 220">
+        <defs>
+          <linearGradient id="g-or" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#fff4c9"/><stop offset=".45" stop-color="#e8bd52"/><stop offset="1" stop-color="#a06c14"/>
+          </linearGradient>
+          <linearGradient id="g-diamant" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#9fd3f0"/>
+          </linearGradient>
+        </defs>
+        <circle cx="100" cy="142" r="56" fill="none" stroke="url(#g-or)" stroke-width="13"/>
+        <circle cx="100" cy="142" r="56" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-dasharray="40 312" stroke-dashoffset="-200"/>
+        <path d="M84 86l-4-16M116 86l4-16M100 88V70" stroke="url(#g-or)" stroke-width="5" stroke-linecap="round"/>
+        <polygon points="70,56 84,38 116,38 130,56" fill="url(#g-diamant)" stroke="#bfe3f7" stroke-width="1.5"/>
+        <polygon points="70,56 130,56 100,86" fill="url(#g-diamant)" stroke="#bfe3f7" stroke-width="1.5"/>
+        <path d="M84 38l6 18 10-18 10 18 6-18M70 56l30 30 30-30M90 56l10 30 10-30" fill="none" stroke="#a9d8f2" stroke-width="1.2"/>
+        <g class="eclats-bague" fill="#fff">
+          <path d="M146 30l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/>
+          <path d="M54 22l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>
+          <path d="M160 72l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+        </g>
+      </svg>
+    </div>
+    <p class="petit" id="demande-pour"></p>
+    <h2 class="script question" id="question" tabindex="-1"></h2>
+    <div class="reponses" id="reponses"></div>
+    <div class="apres-oui" id="apres-oui" hidden>
+      <p class="script grand">Tu as dit oui ❤</p>
+      <p id="apres-oui-texte"></p>
+      <a class="btn" id="whatsapp" target="_blank" rel="noopener" hidden>Envoyer ma réponse sur WhatsApp</a>
+    </div>
+  </div>
+</section>
 
 <script src="contenu.js"></script>
+<script src="sons.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

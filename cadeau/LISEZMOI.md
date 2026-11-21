@@ -1,21 +1,27 @@
-# Cadeau surprise avec code secret
+# Cadeau surprise : la demande en mariage
 
-Page web pour téléphone : un cadenas en forme de cœur s'ouvre avec un code. Derrière, il y a des photos, une chanson et une lettre.
+Page pour téléphone, à ouvrir avec le QR code. Adresse : https://shayma-et-bilal.github.io/cadeau/
 
-Adresse prévue : https://shayma-et-bilal.github.io/cadeau/
+## Déroulé
+1. **Code secret** : cadenas en forme de cœur avec un clavier à chiffres.
+2. **Photos** : vos photos façon polaroid, à faire glisser.
+3. **Lettre** : une enveloppe à toucher, qui s'ouvre sur ta lettre.
+4. **Cadeau** : une boîte à toucher plusieurs fois. Elle bouge de plus en plus fort, puis le couvercle s'envole.
+5. **Bague** : la bague apparaît avec « Veux-tu m'épouser ? ». Un appui sur « Oui » lance les confettis et ton message.
+
+Chaque action a son bruitage : touches, erreur, ouverture, papier, coups sur la boîte, magie, cloche de la bague, fanfare du oui. Les sons sont fabriqués par le navigateur, il n'y a aucun fichier audio. Le bouton 🔊 en haut à droite coupe le son.
 
 ## Remplir le contenu
-Tout se règle dans `contenu.js` : le code, l'indice, les prénoms, les photos, la chanson et la lettre.
+Tout se règle dans `contenu.js` : le code, l'indice, les prénoms, les photos, la lettre, le nombre d'appuis sur le cadeau, la question, les boutons, le message après le oui et le WhatsApp (optionnel).
 
-- **Photos** : ajoute-les dans `photos/` (en .jpg, idéalement moins de 1 Mo chacune), puis écris leur nom dans `contenu.js`.
-- **Chanson** : ajoute un `.mp3` dans `musique/` (il se lance dès que le code est bon), ou colle un lien Spotify ou YouTube.
+Les photos vont dans `photos/`, en .jpg, idéalement moins de 1 Mo chacune.
 
 ## QR code
 - `qr/qr-coeur.png` : 1080×1080 px, pour imprimer ou envoyer.
-- `qr/qr-coeur.svg` : version vectorielle, nette à toutes les tailles.
+- `qr/qr-coeur.svg` : version vectorielle.
 - Pour changer l'adresse : `python outils/qr_coeur.py "https://nouvelle-adresse/"`.
 
 ## À savoir
 - **Ce n'est pas une vraie protection.** Le code bloque l'écran, mais quelqu'un qui lit le code source de la page peut voir le contenu.
-- **Le dépôt est public.** Les photos et le texte mis ici sont visibles sur GitHub. N'y mets rien de trop privé.
-- **Droits de la musique.** Un mp3 du commerce publié sur un site public pose une question de droits d'auteur. Le lien Spotify ou YouTube évite ce problème.
+- **Le dépôt est public.** Les photos et le texte mis ici sont visibles sur GitHub.
+- **Le son.** Sur iPhone en mode silencieux, les bruitages peuvent être coupés. La page demande à Safari de les jouer quand même, mais ça dépend de la version d'iOS. Pour être sûr, désactive le mode silencieux.
