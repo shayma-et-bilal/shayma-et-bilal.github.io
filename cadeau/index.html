@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1a0b1e">
+<title>Un secret t'attend 💌</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💌</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+
+<!-- Écran du cadenas -->
+<section id="verrou" class="verrou" aria-labelledby="verrou-titre">
+  <div class="cadenas" aria-hidden="true">
+    <svg viewBox="0 0 120 120">
+      <path class="anse" d="M40 52V38a20 20 0 0 1 40 0v14" fill="none" stroke-width="9" stroke-linecap="round"/>
+      <path class="coeur" d="M60 104C30 84 18 70 18 56a18 18 0 0 1 42-11 18 18 0 0 1 42 11c0 14-12 28-42 48z"/>
+      <circle cx="60" cy="68" r="6" fill="#1a0b1e"/>
+      <rect x="57" y="70" width="6" height="14" rx="3" fill="#1a0b1e"/>
+    </svg>
+  </div>
+  <h1 id="verrou-titre">Un secret t'attend</h1>
+  <p class="pour" id="verrou-pour"></p>
+  <p class="indice" id="indice"></p>
+  <div class="points" id="points" aria-live="polite"></div>
+  <p class="message" id="message" role="status"></p>
+  <div class="clavier" id="clavier"></div>
+</section>
+
+<!-- Le cadeau, caché tant que le code n'est pas bon -->
+<main id="cadeau" class="cadeau" hidden>
+  <section class="intro">
+    <p class="petit" id="intro-pour"></p>
+    <h2 class="script" id="titre"></h2>
+    <p class="defiler">Fais défiler <span aria-hidden="true">↓</span></p>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-photos">
+    <h3 id="t-photos"><span aria-hidden="true">📸</span> Nos souvenirs</h3>
+    <div class="galerie" id="galerie" tabindex="0" aria-label="Photos, fais glisser pour voir la suite"></div>
+    <div class="reperes" id="reperes" aria-hidden="true"></div>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-chanson">
+    <h3 id="t-chanson"><span aria-hidden="true">🎶</span> Notre chanson</h3>
+    <div class="lecteur">
+      <div class="vinyle" id="vinyle" aria-hidden="true"><span></span></div>
+      <div class="infos">
+        <p class="chanson-titre" id="chanson-titre"></p>
+        <p class="chanson-artiste" id="chanson-artiste"></p>
+        <div class="actions">
+          <button type="button" class="btn" id="lecture" hidden>▶ Écouter</button>
+          <a class="btn btn-clair" id="chanson-lien" target="_blank" rel="noopener" hidden>Ouvrir la chanson ↗</a>
+        </div>
+      </div>
+    </div>
+    <audio id="audio" preload="none" loop></audio>
+  </section>
+
+  <section class="bloc" aria-labelledby="t-lettre">
+    <h3 id="t-lettre"><span aria-hidden="true">💌</span> Une lettre pour toi</h3>
+    <button type="button" class="enveloppe" id="enveloppe" aria-expanded="false" aria-controls="lettre">
+      <span class="rabat" aria-hidden="true"></span>
+      <span class="sceau" aria-hidden="true">❤</span>
+      <span class="ouvrir">Touche pour ouvrir</span>
+    </button>
+    <article class="lettre" id="lettre" hidden>
+      <p class="lettre-pour" id="lettre-pour"></p>
+      <div id="lettre-texte"></div>
+      <p class="signature script" id="signature"></p>
+      <p class="de" id="de"></p>
+    </article>
+  </section>
+
+  <section class="fin">
+    <div class="gros-coeur" aria-hidden="true">❤</div>
+    <p class="script" id="fin"></p>
+  </section>
+</main>
+
+<script src="contenu.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
