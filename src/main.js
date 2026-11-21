@@ -238,7 +238,7 @@ function enter() {
     .fromTo(S.names, { prog: 0 }, { prog: 1, duration: 3.3, ease: 'none' }, 13.15)
     .fromTo('.sub1', { opacity: 0, y: 16, letterSpacing: '.6em' }, { opacity: 1, y: 0, letterSpacing: '.32em', duration: 1.8, ease: 'expo.out' }, 15.4)
     .fromTo('.sub2', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.4, ease: 'power3.out' }, 15.9)
-    .to('.scroll-cue', { opacity: 1, duration: 1.2 }, 16.6)
+    .to('.scroll-cue', { autoAlpha: 1, duration: 1.2 }, 16.6)
     .set('#skip', { display: 'none' }, 16.6);
   if (reduce) tl.progress(1);
 }
@@ -256,7 +256,9 @@ function unlock() {
 
 function setupScroll() {
   if (sc) gsap.to(sc.S.scroll, { p: 1, ease: 'none', scrollTrigger: { trigger: '#content', start: 'top top', end: 'bottom bottom', scrub: 1.4 } });
-  gsap.to('.st-sub, .scroll-cue', { opacity: 0, y: -50, ease: 'none', stagger: 0.02,
+  // la flèche « Faites défiler » descend jusqu'à la suite
+  $('.sc-btn').addEventListener('click', () => lenis.scrollTo('#verset', { duration: 1.8 }));
+  gsap.to('.st-sub, .scroll-cue', { autoAlpha: 0, y: -50, ease: 'none', stagger: 0.02,
     scrollTrigger: { trigger: '.landing-space', start: 'top top', end: '45% top', scrub: true } });
 
   // fil de progression
@@ -315,7 +317,7 @@ function fallback() {
     gsap.to('#intro, #fallback', { autoAlpha: 0, duration: 1 });
     const n = document.createElement('p'); n.className = 'script huge'; n.textContent = 'Shayma & Bilal';
     n.style.cssText = 'position:absolute;left:0;right:0;top:44%;text-align:center;font-size:clamp(3rem,13vw,7rem)'; $('#stage').appendChild(n);
-    gsap.to('.bism, .ar-hero, .fr-hero, .st-verse .ref, .sub1, .sub2, .scroll-cue', { opacity: 1, duration: 1.2, stagger: 0.15 });
+    gsap.to('.bism, .ar-hero, .fr-hero, .st-verse .ref, .sub1, .sub2, .scroll-cue', { autoAlpha: 1, duration: 1.2, stagger: 0.15 });
     unlock();
   });
 }

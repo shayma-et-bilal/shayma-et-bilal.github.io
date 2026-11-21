@@ -72,7 +72,7 @@ body.locked{overflow:hidden;height:100svh}
 .sound-hint{margin-top:.9rem;font-size:.95rem;font-style:italic;color:rgba(244,234,214,.7)}
 
 /* ============ SCÈNE SUR LA LUNE ============ */
-#stage{position:fixed;inset:0;z-index:12;pointer-events:none}
+#stage{position:fixed;inset:0;z-index:25;pointer-events:none}
 .st-verse{position:absolute;left:0;right:0;top:max(7.5vh,calc(env(safe-area-inset-top) + 2.2rem));text-align:center;padding:0 1.2rem}
 .bism{font-family:var(--quran);font-size:clamp(1rem,3.6vw,1.25rem);color:var(--gold);opacity:0}
 .ar-hero{font-family:var(--quran);font-size:clamp(2.2rem,9vw,3.8rem);line-height:1.45;color:#fff8e6;text-shadow:0 0 26px rgba(255,214,140,.45),0 2px 12px rgba(0,0,0,.6);opacity:0}
@@ -82,9 +82,16 @@ body.locked{overflow:hidden;height:100svh}
 .st-sub{position:absolute;left:0;right:0;bottom:max(15vh,calc(env(safe-area-inset-bottom) + 6.5rem));text-align:center;padding:0 1rem}
 .sub1{font-family:var(--caps);font-size:clamp(.95rem,3.8vw,1.25rem);letter-spacing:.32em;text-transform:uppercase;color:var(--gold-l);padding-left:.32em;opacity:0;text-shadow:0 2px 16px rgba(0,0,0,.9)}
 .sub2{font-style:italic;font-size:clamp(1.05rem,4vw,1.3rem);margin-top:.35rem;opacity:0;text-shadow:0 2px 14px rgba(0,0,0,.9)}
-.scroll-cue{position:absolute;left:0;right:0;bottom:max(3.5vh,calc(env(safe-area-inset-bottom) + 1rem));display:flex;flex-direction:column;align-items:center;gap:.7rem;
-  font-family:var(--caps);font-size:.62rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);padding-left:.45em;opacity:0}
-.scroll-cue span{width:1px;height:44px;background:linear-gradient(var(--gold),transparent);transform-origin:top;animation:drip 2s var(--ease) infinite}
+.scroll-cue{position:absolute;left:0;right:0;bottom:max(3vh,calc(env(safe-area-inset-bottom) + .8rem));display:flex;justify-content:center;opacity:0;visibility:hidden;pointer-events:none}
+.sc-btn{pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:.45rem;background:none;border:0;cursor:pointer;padding:.6rem 1.4rem;
+  font-family:var(--caps);font-size:.66rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold-l);text-shadow:0 2px 12px rgba(0,0,0,.9)}
+.sc-txt{padding-left:.45em}
+.sc-arrow{width:30px;height:36px;fill:none;stroke:var(--gold-l);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 6px rgba(243,220,158,.75));animation:bounceDown 1.6s cubic-bezier(.45,0,.55,1) infinite}
+.sc-arrow path:last-child{animation:chevron 1.6s ease-in-out infinite}
+.sc-btn:focus-visible{outline:1px solid var(--gold);outline-offset:4px;border-radius:12px}
+@keyframes bounceDown{0%,100%{transform:translateY(0)}50%{transform:translateY(9px)}}
+@keyframes chevron{0%,100%{opacity:.45}50%{opacity:1}}
 @keyframes drip{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 .skip{position:absolute;right:max(1.4rem,env(safe-area-inset-right));bottom:max(1.4rem,env(safe-area-inset-bottom));pointer-events:auto;background:rgba(4,5,13,.35);border:1px solid rgba(217,181,108,.35);
   color:var(--gold-l);font-family:var(--caps);font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;padding:.6rem 1rem;border-radius:999px;cursor:pointer;backdrop-filter:blur(6px)}
@@ -219,5 +226,5 @@ em{color:var(--gold-l);font-style:italic}
   .btns{flex-direction:row;flex-wrap:wrap;justify-content:center}.btns .btn{flex:1 1 200px}
 }
 @media (prefers-reduced-motion:reduce){
-  .grain,.ld-star,.qamar,.lantern,.btn.gold,.scroll-cue span{animation:none!important}
+  .grain,.ld-star,.qamar,.lantern,.btn.gold,.sc-arrow,.sc-arrow path{animation:none!important}
 }
