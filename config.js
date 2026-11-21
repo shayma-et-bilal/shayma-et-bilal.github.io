@@ -10,8 +10,9 @@ window.CONFIG = {
   whatsapp: "",    // ex : "33612345678"  (indicatif pays sans le +, sans espaces)
   messageRsvp: "Salam ! Je confirme ma présence aux fiançailles de Shayma & Bilal 🌙",
 
-  // Musique de fond : dépose ton fichier audio ici (mp3 ou m4a).
-  // Si le fichier n'existe pas, le bouton son est simplement masqué.
+  // Récitation jouée une fois quand on appuie sur la lune (sourate Al-Fâtiha, Mishary Alafasy).
+  // Mets "" pour l'enlever ; la musique ci-dessous (en boucle) serait alors utilisée à la place.
+  recitation: "assets/fatiha.mp3",
   musique: "assets/musique.mp3",
-  volume: 0.55,    // 0 à 1
+  volume: 0.9,     // 0 à 1
 };

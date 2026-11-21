@@ -39,19 +39,28 @@ function setProgress(p) {
 }
 setProgress(0.02);
 
-/* ---------------- musique ---------------- */
+/* ---------------- son : récitation (une fois) ou musique (en boucle) ---------------- */
 const audio = $('#music');
-let audioReady = false, gainNode = null, actx = null, muted = false;
+let audioReady = false, gainNode = null, actx = null, muted = false, finished = false;
+const SON = CONFIG.recitation || CONFIG.musique;
+const isRecit = !!CONFIG.recitation;
 const targetVol = CONFIG.volume ?? 0.55;
-if (CONFIG.musique) {
+audio.loop = !isRecit;
+if (SON) {
   audio.addEventListener('loadedmetadata', () => { audioReady = true; $('.sound-hint').hidden = false; }, { once: true });
   audio.addEventListener('error', () => { audioReady = false; $('.sound-hint').hidden = true; $('#sound').hidden = true; }, { once: true });
-  audio.src = CONFIG.musique; audio.load();
+  audio.src = SON; audio.load();
 }
+// à la fin de la récitation : le bouton passe en « réécouter »
+audio.addEventListener('ended', () => {
+  if (!isRecit) return;
+  finished = true; muted = true;
+  $('#sound').classList.add('off'); $('#sound').setAttribute('aria-label', 'Réécouter la récitation');
+});
 const volObj = { v: 0 };
 function applyVol() { if (gainNode) gainNode.gain.value = volObj.v; else audio.volume = Math.min(1, volObj.v); }
 function startMusic() {
-  if (!CONFIG.musique || audio.error) return;
+  if (!SON || audio.error) return;
   try { // Web Audio : le volume HTML est ignoré sur iPhone, le gain non
     const AC = window.AudioContext || window.webkitAudioContext;
     if (AC && !actx) { actx = new AC(); const src = actx.createMediaElementSource(audio); gainNode = actx.createGain(); gainNode.gain.value = 0; src.connect(gainNode).connect(actx.destination); }
@@ -59,16 +68,17 @@ function startMusic() {
   } catch (e) { gainNode = null; }
   volObj.v = 0; applyVol();
   const p = audio.play();
-  if (p) p.then(() => { $('#sound').hidden = false; gsap.to(volObj, { v: targetVol, duration: 5, ease: 'sine.inOut', onUpdate: applyVol }); }).catch(() => {});
+  if (p) p.then(() => { $('#sound').hidden = false; gsap.to(volObj, { v: targetVol, duration: isRecit ? 1.5 : 5, ease: 'sine.inOut', onUpdate: applyVol }); }).catch(() => {});
 }
 $('#sound').addEventListener('click', () => {
+  if (finished) { finished = false; audio.currentTime = 0; } // réécouter depuis le début
   muted = !muted; $('#sound').classList.toggle('off', muted);
   $('#sound').setAttribute('aria-label', muted ? 'Remettre le son' : 'Couper le son');
   gsap.to(volObj, { v: muted ? 0 : targetVol, duration: 1.2, ease: 'sine.inOut', onUpdate: applyVol,
     onStart() { if (!muted) audio.play().catch(() => {}); }, onComplete() { if (muted) audio.pause(); } });
 });
 document.addEventListener('visibilitychange', () => {
-  if (!audio.src || muted || audio.paused === document.hidden) return;
+  if (!audio.src || muted || finished || audio.paused === document.hidden) return;
   if (document.hidden) audio.pause(); else if (entered) audio.play().catch(() => {});
 });
 
