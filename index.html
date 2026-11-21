@@ -13,8 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261121c">
-<script src="config.js?v=20261121c"></script>
+<link rel="stylesheet" href="style.css?v=20261121d">
+<script src="config.js?v=20261121d"></script>
+<script>(function(){var L=["fr","nl","ary"],l="fr";try{var q=new URLSearchParams(location.search).get("lang"),s=localStorage.getItem("lang"),n=(navigator.language||"").toLowerCase();l=L.indexOf(q)>-1?q:L.indexOf(s)>-1?s:n.indexOf("nl")===0?"nl":n.indexOf("ar")===0?"ary":"fr";}catch(e){}var d=document.documentElement;d.classList.add("lang-"+l);d.lang=l==="ary"?"ar-MA":l;if(l==="ary")d.dir="rtl";window.__LANG=l;})();</script>
 </head>
 <body class="loading locked">
 
@@ -57,20 +58,21 @@
 <!-- ============ CHARGEMENT ============ -->
 <div id="loader">
   <svg class="ld-star" viewBox="0 0 100 100" aria-hidden="true"><polygon id="ldStar" fill="none" stroke="#d9b56c" stroke-width="1.2"/></svg>
-  <p class="ld-txt">La lune se lève<span class="ld-pct">0</span></p>
+  <p class="ld-txt"><span data-i18n="loader">La lune se lève</span><span class="ld-pct">0</span></p>
+  <script>(function(){var t={nl:"De maan komt op",ary:"القمر طالع"}[window.__LANG];if(t)document.querySelector("[data-i18n=loader]").textContent=t;})();</script>
 </div>
 
 <!-- ============ SCÈNE 1 : LA LUNE ============ -->
-<section id="intro" aria-label="Accueil">
+<section id="intro" aria-label="Accueil" data-i18n-aria="introAria">
   <div class="intro-arch" data-arch data-lobes="13"></div>
   <div class="intro-top">
-    <p class="kicker">Invitation</p>
+    <p class="kicker" data-i18n="kicker">Invitation</p>
     <p class="qamar" lang="ar" dir="rtl">قمري</p>
     <p class="qamar-lat">Qamary</p>
   </div>
   <div class="intro-bottom">
-    <button id="enter" class="enter"><span class="enter-ring"></span><span class="enter-txt">Appuyez sur la lune</span></button>
-    <p class="sound-hint" hidden>🎧 Montez le son · récitation d’Al-Fâtiha</p>
+    <button id="enter" class="enter"><span class="enter-ring"></span><span class="enter-txt" data-i18n="enter">Appuyez sur la lune</span></button>
+    <p class="sound-hint" hidden data-i18n="soundHint">🎧 Montez le son · récitation d’Al-Fâtiha</p>
   </div>
 </section>
 
@@ -79,17 +81,23 @@
   <div class="st-verse">
     <p class="bism" lang="ar" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
     <p class="ar-hero" lang="ar" dir="rtl">وَخَلَقْنَـٰكُمْ أَزْوَٰجًا</p>
-    <p class="fr-hero">« Nous vous avons créés en couples »</p>
-    <p class="ref">Sourate An-Naba (78), verset 8</p>
+    <p class="fr-hero tr" data-i18n="v78tr">« Nous vous avons créés en couples »</p>
+    <p class="ref" data-i18n="v78ref">Sourate An-Naba (78), verset 8</p>
   </div>
   <h1 class="sr-only">Shayma & Bilal</h1>
   <div class="st-sub">
-    <p class="sub1">unissent leurs cœurs</p>
-    <p class="sub2">et vous invitent à célébrer leurs fiançailles</p>
+    <p class="sub1" data-i18n="sub1">unissent leurs cœurs</p>
+    <p class="sub2" data-i18n="sub2">et vous invitent à célébrer leurs fiançailles</p>
   </div>
-  <div class="scroll-cue"><button class="sc-btn" type="button" aria-label="Faire défiler vers la suite de l’invitation"><span class="sc-txt">Faites défiler</span><svg class="sc-arrow" viewBox="0 0 28 34" aria-hidden="true"><path d="M5 5 L14 14 L23 5"/><path d="M5 17 L14 26 L23 17"/></svg></button></div>
-  <button id="skip" class="skip" hidden>Passer ›</button>
+  <div class="scroll-cue"><button class="sc-btn" type="button" aria-label="Faire défiler vers la suite de l’invitation" data-i18n-aria="scrollAria"><span class="sc-txt" data-i18n="scroll">Faites défiler</span><svg class="sc-arrow" viewBox="0 0 28 34" aria-hidden="true"><path d="M5 5 L14 14 L23 5"/><path d="M5 17 L14 26 L23 17"/></svg></button></div>
+  <button id="skip" class="skip" hidden data-i18n="skip">Passer ›</button>
 </div>
+
+<nav class="langs" aria-label="Langue · Taal · اللغة">
+  <button type="button" data-lang="ary" lang="ar" dir="rtl"><span class="l-full">الدارجة</span><span class="l-short">ع</span></button>
+  <button type="button" data-lang="fr" lang="fr"><span class="l-full">Français</span><span class="l-short">FR</span></button>
+  <button type="button" data-lang="nl" lang="nl"><span class="l-full">Nederlands</span><span class="l-short">NL</span></button>
+</nav>
 
 <button id="sound" class="sound" aria-label="Couper le son" hidden><i></i><i></i><i></i><i></i></button>
 <div class="progress" aria-hidden="true"><span class="pg-line"></span><span class="pg-star"></span></div>
@@ -105,8 +113,8 @@
         <p class="eyebrow">Le Coran</p>
         <p class="ar-big split-ar" lang="ar" dir="rtl">وَمِنْ ءَايَـٰتِهِۦٓ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَٰجًا لِّتَسْكُنُوٓا۟ إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِى ذَٰلِكَ لَـَٔايَـٰتٍ لِّقَوْمٍ يَتَفَكَّرُونَ</p>
         <div class="divider" data-divider></div>
-        <p class="fr split-fr">« Et parmi Ses signes Il a créé de vous, pour vous, des épouses pour que vous viviez en tranquillité avec elles et Il a mis entre vous de l’affection et de la bonté. Il y a en cela des preuves pour des gens qui réfléchissent. »</p>
-        <p class="ref rv">Sourate Ar-Rûm (30), verset 21 · trad. Muhammad Hamidullah</p>
+        <p class="fr split-fr tr" data-i18n="v30tr">« Et parmi Ses signes Il a créé de vous, pour vous, des épouses pour que vous viviez en tranquillité avec elles et Il a mis entre vous de l’affection et de la bonté. Il y a en cela des preuves pour des gens qui réfléchissent. »</p>
+        <p class="ref rv" data-i18n="v30ref">Sourate Ar-Rûm (30), verset 21 · trad. Muhammad Hamidullah</p>
       </div>
     </div>
   </section>
@@ -115,17 +123,17 @@
     <div class="lanterns"><svg class="lantern l-a"><use href="#lantern"/></svg><svg class="lantern l-b"><use href="#lantern"/></svg><svg class="lantern l-c"><use href="#lantern"/></svg></div>
     <article class="card arch-card" data-corners>
       <div class="card-arch" data-arch data-fill data-lobes="9"></div>
-      <p class="eyebrow rv">Par la grâce d’Allah</p>
-      <h2 class="script rv">Notre union</h2>
+      <p class="eyebrow rv" data-i18n="grace">Par la grâce d’Allah</p>
+      <h2 class="script rv" data-i18n="union">Notre union</h2>
       <div class="duo rv">
         <span class="name">Shayma</span>
         <span class="rings" aria-hidden="true"><i></i><i></i></span>
         <span class="name">Bilal</span>
       </div>
       <div class="zband inline rv"></div>
-      <p class="body split-fr">Deux âmes créées par paire, qui se sont trouvées sous la même lune.</p>
-      <p class="body split-fr">Avec la bénédiction de leurs familles, Shayma et Bilal ont choisi de compléter leur dîn ensemble.</p>
-      <p class="accent split-fr">Ils ont l’immense joie de vous convier à leurs fiançailles.</p>
+      <p class="body split-fr" data-i18n="u1">Deux âmes créées par paire, qui se sont trouvées sous la même lune.</p>
+      <p class="body split-fr" data-i18n="u2">Avec la bénédiction de leurs familles, Shayma et Bilal ont choisi de compléter leur dîn ensemble.</p>
+      <p class="accent split-fr" data-i18n="u3">Ils ont l’immense joie de vous convier à leurs fiançailles.</p>
       <div class="zband bottom"></div>
     </article>
   </section>
@@ -137,40 +145,40 @@
       <div class="pair-star" aria-hidden="true"></div>
       <p class="ar-pair split-ar" lang="ar" dir="rtl">وَأَنتُمْ لِبَاسٌ لَّهُنَّ</p>
     </div>
-    <p class="fr split-fr">« Elles sont un vêtement pour vous et vous êtes un vêtement pour elles. »</p>
-    <p class="ref rv">Sourate Al-Baqara (2), extrait du verset 187 · trad. Muhammad Hamidullah</p>
+    <p class="fr split-fr tr" data-i18n="v2tr">« Elles sont un vêtement pour vous et vous êtes un vêtement pour elles. »</p>
+    <p class="ref rv" data-i18n="v2ref">Sourate Al-Baqara (2), extrait du verset 187 · trad. Muhammad Hamidullah</p>
   </section>
 
   <section class="sec" id="hadiths">
     <div class="sec-head plain-head">
-      <p class="eyebrow rv">La Sunna</p>
-      <h2 class="title split-fr">Paroles du Prophète <span class="saw">ﷺ</span> sur le mariage</h2>
+      <p class="eyebrow rv" data-i18n="sunna">La Sunna</p>
+      <h2 class="title split-fr" data-i18n="hTitle">Paroles du Prophète <span class="saw">ﷺ</span> sur le mariage</h2>
       <div class="divider" data-divider></div>
     </div>
     <div class="stack">
       <article class="hcard" data-corners>
         <span class="hnum">١</span>
         <p class="ar-h" lang="ar" dir="rtl">لَمْ نَرَ لِلْمُتَحَابَّيْنِ مِثْلَ النِّكَاحِ</p>
-        <p class="fr-h">« On n’a jamais rien vu de pareil au mariage pour deux personnes qui s’aiment. »</p>
-        <p class="src">Rapporté par Ibn ʿAbbâs · Sunan Ibn Mâjah n°1847 · authentifié (sahîh) par al-Albânî · trad. libre</p>
+        <p class="fr-h tr" data-i18n="h1tr">« On n’a jamais rien vu de pareil au mariage pour deux personnes qui s’aiment. »</p>
+        <p class="src" data-i18n="h1src">Rapporté par Ibn ʿAbbâs · Sunan Ibn Mâjah n°1847 · authentifié (sahîh) par al-Albânî · trad. libre</p>
       </article>
       <article class="hcard" data-corners>
         <span class="hnum">٢</span>
         <p class="ar-h" lang="ar" dir="rtl">الدُّنْيَا مَتَاعٌ وَخَيْرُ مَتَاعِ الدُّنْيَا الْمَرْأَةُ الصَّالِحَةُ</p>
-        <p class="fr-h">« Toute la vie d’ici-bas est une jouissance, et la meilleure chose qu’on puisse en tirer est une femme pieuse. »</p>
-        <p class="src">Rapporté par ʿAbdullâh ibn ʿAmr · Sahîh Muslim n°1467</p>
+        <p class="fr-h tr" data-i18n="h2tr">« Toute la vie d’ici-bas est une jouissance, et la meilleure chose qu’on puisse en tirer est une femme pieuse. »</p>
+        <p class="src" data-i18n="h2src">Rapporté par ʿAbdullâh ibn ʿAmr · Sahîh Muslim n°1467</p>
       </article>
       <article class="hcard" data-corners>
         <span class="hnum">٣</span>
         <p class="ar-h" lang="ar" dir="rtl">خَيْرُكُمْ خَيْرُكُمْ لأَهْلِهِ وَأَنَا خَيْرُكُمْ لأَهْلِي</p>
-        <p class="fr-h">« Le meilleur d’entre vous est le meilleur envers sa famille, et je suis le meilleur d’entre vous envers ma famille. »</p>
-        <p class="src">Rapporté par ʿÂʾisha · Jâmiʿ at-Tirmidhî n°3895 · authentifié (sahîh) par al-Albânî · trad. libre</p>
+        <p class="fr-h tr" data-i18n="h3tr">« Le meilleur d’entre vous est le meilleur envers sa famille, et je suis le meilleur d’entre vous envers ma famille. »</p>
+        <p class="src" data-i18n="h3src">Rapporté par ʿÂʾisha · Jâmiʿ at-Tirmidhî n°3895 · authentifié (sahîh) par al-Albânî · trad. libre</p>
       </article>
       <article class="hcard" data-corners>
         <span class="hnum">٤</span>
         <p class="ar-h" lang="ar" dir="rtl">أَكْمَلُ الْمُؤْمِنِينَ إِيمَانًا أَحْسَنُهُمْ خُلُقًا وَخِيَارُكُمْ خِيَارُكُمْ لِنِسَائِهِمْ خُلُقًا</p>
-        <p class="fr-h">« Les croyants à la foi la plus complète sont ceux qui ont le meilleur caractère, et les meilleurs d’entre vous sont ceux qui ont le meilleur caractère envers leurs épouses. »</p>
-        <p class="src">Rapporté par Abû Hurayra · Jâmiʿ at-Tirmidhî n°1162 · hasan sahîh · trad. libre</p>
+        <p class="fr-h tr" data-i18n="h4tr">« Les croyants à la foi la plus complète sont ceux qui ont le meilleur caractère, et les meilleurs d’entre vous sont ceux qui ont le meilleur caractère envers leurs épouses. »</p>
+        <p class="src" data-i18n="h4src">Rapporté par Abû Hurayra · Jâmiʿ at-Tirmidhî n°1162 · hasan sahîh · trad. libre</p>
       </article>
     </div>
   </section>
@@ -179,47 +187,47 @@
     <div class="lanterns"><svg class="lantern l-a"><use href="#lantern"/></svg><svg class="lantern l-c"><use href="#lantern"/></svg></div>
     <article class="card arch-card" data-corners>
       <div class="card-arch" data-arch data-fill data-lobes="9"></div>
-      <p class="eyebrow rv">Le rendez-vous</p>
-      <h2 class="script rv">Sous la lune</h2>
+      <p class="eyebrow rv" data-i18n="rdv">Le rendez-vous</p>
+      <h2 class="script rv" data-i18n="underMoon">Sous la lune</h2>
       <div class="zband inline rv"></div>
       <div class="info rv">
-        <div><span class="lbl">Date</span><span id="iDate"></span></div>
-        <div><span class="lbl">Heure</span><span id="iHeure"></span></div>
-        <div><span class="lbl">Lieu</span><span id="iLieu"></span></div>
+        <div><span class="lbl" data-i18n="lblDate">Date</span><span id="iDate"></span></div>
+        <div><span class="lbl" data-i18n="lblTime">Heure</span><span id="iHeure"></span></div>
+        <div><span class="lbl" data-i18n="lblPlace">Lieu</span><span id="iLieu"></span></div>
       </div>
       <div id="countdown" class="countdown rv" hidden>
-        <div><b id="cdJ">0</b><small>jours</small></div>
-        <div><b id="cdH">0</b><small>heures</small></div>
-        <div><b id="cdM">0</b><small>min</small></div>
-        <div><b id="cdS">0</b><small>sec</small></div>
+        <div><b id="cdJ">0</b><small data-i18n="cdDays">jours</small></div>
+        <div><b id="cdH">0</b><small data-i18n="cdHours">heures</small></div>
+        <div><b id="cdM">0</b><small data-i18n="cdMin">min</small></div>
+        <div><b id="cdS">0</b><small data-i18n="cdSec">sec</small></div>
       </div>
       <div class="btns rv">
-        <a id="bMaps" class="btn" target="_blank" rel="noopener" hidden>Itinéraire</a>
-        <button id="bCal" class="btn" hidden>Ajouter au calendrier</button>
-        <a id="bRsvp" class="btn gold" target="_blank" rel="noopener" hidden>Confirmer ma présence</a>
+        <a id="bMaps" class="btn" target="_blank" rel="noopener" hidden data-i18n="bMaps">Itinéraire</a>
+        <button id="bCal" class="btn" hidden data-i18n="bCal">Ajouter au calendrier</button>
+        <a id="bRsvp" class="btn gold" target="_blank" rel="noopener" hidden data-i18n="bRsvp">Confirmer ma présence</a>
       </div>
       <div class="zband bottom"></div>
     </article>
   </section>
 
   <section class="sec plain" id="doua">
-    <p class="eyebrow rv">Douâ</p>
+    <p class="eyebrow rv" data-i18n="doua">Douâ</p>
     <p class="ar-big split-ar" lang="ar" dir="rtl">رَبَّنَا هَبْ لَنَا مِنْ أَزْوَٰجِنَا وَذُرِّيَّـٰتِنَا قُرَّةَ أَعْيُنٍ وَٱجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا</p>
-    <p class="fr split-fr">« Notre Seigneur ! Donne-nous, en nos épouses et nos descendants, la joie des yeux, et fais de nous un guide pour les pieux ! »</p>
-    <p class="ref rv">Sourate Al-Furqân (25), verset 74 · trad. Muhammad Hamidullah</p>
+    <p class="fr split-fr tr" data-i18n="v25tr">« Notre Seigneur ! Donne-nous, en nos épouses et nos descendants, la joie des yeux, et fais de nous un guide pour les pieux ! »</p>
+    <p class="ref rv" data-i18n="v25ref">Sourate Al-Furqân (25), verset 74 · trad. Muhammad Hamidullah</p>
     <div class="divider" data-divider></div>
     <p class="ar-mid split-ar" lang="ar" dir="rtl">بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ</p>
-    <p class="fr split-fr">« Qu’Allah te bénisse, qu’Il te comble de Ses bénédictions, et qu’Il vous réunisse tous les deux dans le bien. »</p>
-    <p class="ref rv">Invocation du Prophète <span class="saw">ﷺ</span> pour les mariés · Sunan Abî Dâwûd n°2130 · authentifié (sahîh) par al-Albânî</p>
+    <p class="fr split-fr tr" data-i18n="duaTr">« Qu’Allah te bénisse, qu’Il te comble de Ses bénédictions, et qu’Il vous réunisse tous les deux dans le bien. »</p>
+    <p class="ref rv" data-i18n="duaRef">Invocation du Prophète <span class="saw">ﷺ</span> pour les mariés · Sunan Abî Dâwûd n°2130 · authentifié (sahîh) par al-Albânî</p>
   </section>
 
   <footer class="sec plain" id="fin">
     <p class="script huge rv">Shayma & Bilal</p>
     <p class="qamar small rv" lang="ar" dir="rtl">قمري</p>
-    <p class="fr rv">Nous avons hâte de partager ce moment avec vous.</p>
+    <p class="fr rv" data-i18n="fin">Nous avons hâte de partager ce moment avec vous.</p>
     <details class="sources rv">
-      <summary>Sources</summary>
-      <ul>
+      <summary data-i18n="sources">Sources</summary>
+      <ul data-i18n="sourcesList">
         <li>Versets du Coran : texte arabe et traduction de Muhammad Hamidullah, via quran.com.</li>
         <li>Hadiths : texte arabe et jugements d’authenticité via la base hadith-api (fawazahmed0). Les traductions marquées « trad. libre » ont été rédigées pour cette invitation ; les autres viennent de la même base.</li>
         <li>Récitation : sourate Al-Fâtiha par Mishary Rashid Alafasy (fichiers verset par verset d’EveryAyah.com).</li>
@@ -230,6 +238,6 @@
 </main>
 
 <audio id="music" preload="metadata"></audio>
-<script type="module" src="dist/main.js?v=20261121c"></script>
+<script type="module" src="dist/main.js?v=20261121d"></script>
 </body>
 </html>

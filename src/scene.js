@@ -348,13 +348,23 @@ export async function createScene(canvas, { mobile, onProgress }) {
   /* ---------- caméra : poses clés ---------- */
   const portrait = () => innerWidth / innerHeight < 0.9;
   // taille de la lune à l'accueil : l'espace libre entre le titre et le bouton
-  const introDist = () => {
-    const a = innerWidth / innerHeight, t = Math.tan(15 * DEG), H = innerHeight;
-    if (a < 1) return 1 / (0.72 * t * a);
-    return 1 / (Math.min(0.5, Math.max(0.28, (0.705 * H - 250) / H)) * t);
+  // la lune de l'accueil occupe l'espace libre entre le titre et le bouton (quelle que soit la langue)
+  const introSpace = () => {
+    const a = document.querySelector('.intro-top'), b = document.querySelector('.intro-bottom');
+    if (!a || !b || !b.offsetHeight) return null;
+    return { top: a.offsetTop + a.offsetHeight, bottom: b.offsetTop };
   };
-  // décalage vertical : la lune centrée dans cet espace libre
-  const introY = (d = introDist()) => (innerWidth / innerHeight < 1 ? 0.035 : 0.0475 + 55 / innerHeight) * 2 * d * Math.tan(15 * DEG);
+  const introDist = () => {
+    const t = Math.tan(15 * DEG), H = innerHeight, W = innerWidth, sp = introSpace();
+    let dPx = Math.min(W < H ? W * 0.74 : H * 0.5, sp ? sp.bottom - sp.top - 28 : H * 0.5);
+    dPx = Math.max(dPx, Math.min(W, H) * 0.3);
+    return H / (dPx * t);
+  };
+  const introY = (d = introDist()) => {
+    const H = innerHeight, sp = introSpace();
+    const cy = sp ? (sp.top + sp.bottom) / 2 : H * 0.55;
+    return ((cy - H / 2) * 2 * d * Math.tan(15 * DEG)) / H;
+  };
   const A = 0.14, ALT = 1.05; // orbite basse : ~87 km d'altitude, 243 km au sud de Copernic
   const landPos = new THREE.Vector3(0, -Math.sin(A), Math.cos(A)).multiplyScalar(ALT);
   const landTarget = new THREE.Vector3(0, Math.sin(0.035), Math.cos(0.035));

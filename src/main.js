@@ -4,6 +4,7 @@ import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 import { createScene, webglOK } from './scene.js';
 import { decorate, starPts } from './deco.js';
+import { T, LANGS } from './i18n.js';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -12,6 +13,27 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const CONFIG = window.CONFIG || {};
 const DEG = Math.PI / 180;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------------- langues : français, néerlandais, darija ---------------- */
+let LANG = LANGS.includes(window.__LANG) ? window.__LANG : 'fr';
+const t = (k) => (T[LANG] && T[LANG][k] != null ? T[LANG][k] : T.fr[k]);
+function applyLang(l) {
+  LANG = l;
+  const root = document.documentElement;
+  root.lang = l === 'ary' ? 'ar-MA' : l; root.dir = l === 'ary' ? 'rtl' : 'ltr';
+  LANGS.forEach((x) => root.classList.toggle('lang-' + x, x === l));
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    if (el.dataset.fr === undefined) el.dataset.fr = el.innerHTML; // le texte français d'origine
+    const v = l === 'fr' ? el.dataset.fr : T[l][el.dataset.i18n];
+    if (v != null) el.innerHTML = v;
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+    if (el.dataset.frAria === undefined) el.dataset.frAria = el.getAttribute('aria-label') || '';
+    el.setAttribute('aria-label', l === 'fr' ? el.dataset.frAria : (T[l][el.dataset.i18nAria] || el.dataset.frAria));
+  });
+  document.querySelectorAll('.langs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+}
+applyLang(LANG);
 const mobile = matchMedia('(pointer: coarse)').matches || innerWidth < 760;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -57,7 +79,7 @@ if (SON) {
 audio.addEventListener('ended', () => {
   if (!isRecit) return;
   finished = true; muted = true;
-  $('#sound').classList.add('off'); $('#sound').setAttribute('aria-label', 'Réécouter la récitation');
+  $('#sound').classList.add('off'); $('#sound').setAttribute('aria-label', t('replay'));
 });
 const volObj = { v: 0 };
 function applyVol() { if (volOK) audio.volume = Math.min(1, Math.max(0, volObj.v)); }
@@ -69,13 +91,13 @@ function startMusic() {
   const p = audio.play();
   const ok = () => { $('#sound').hidden = false; if (volOK) gsap.to(volObj, { v: targetVol, duration: isRecit ? 1.5 : 5, ease: 'sine.inOut', onUpdate: applyVol }); };
   // si le navigateur refuse la lecture, le bouton son apparaît éteint : un toucher dessus la lance
-  const ko = () => { muted = true; $('#sound').hidden = false; $('#sound').classList.add('off'); $('#sound').setAttribute('aria-label', 'Écouter la récitation'); };
+  const ko = () => { muted = true; $('#sound').hidden = false; $('#sound').classList.add('off'); $('#sound').setAttribute('aria-label', t('listen')); };
   if (p && p.then) p.then(ok).catch(ko); else ok();
 }
 $('#sound').addEventListener('click', () => {
   if (finished) { finished = false; audio.currentTime = 0; } // réécouter depuis le début
   muted = !muted; $('#sound').classList.toggle('off', muted);
-  $('#sound').setAttribute('aria-label', muted ? 'Remettre le son' : 'Couper le son');
+  $('#sound').setAttribute('aria-label', muted ? t('soundOn') : t('soundOff'));
   gsap.killTweensOf(volObj);
   if (!muted) { if (!volOK) volObj.v = targetVol; audio.play().catch(() => {}); }
   if (volOK) gsap.to(volObj, { v: muted ? 0 : targetVol, duration: 1, ease: 'sine.inOut', onUpdate: applyVol, onComplete() { if (muted) audio.pause(); } });
@@ -97,20 +119,32 @@ if (matchMedia('(pointer: fine)').matches && !reduce) {
 }
 
 /* ---------------- infos de la soirée ---------------- */
-function fillInfos() {
-  const d = CONFIG.date ? new Date(CONFIG.date) : null; const ok = d && !isNaN(d);
-  $('#iDate').textContent = ok ? d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Bientôt, in shâ’ Allâh';
-  $('#iHeure').textContent = ok ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : 'À venir';
-  const lieu = [CONFIG.lieu, CONFIG.adresse].filter(Boolean);
-  $('#iLieu').textContent = lieu.length ? lieu.join(' — ') : 'À venir';
+const evDate = CONFIG.date ? new Date(CONFIG.date) : null;
+const dateOK = evDate && !isNaN(evDate);
+const lieu = [CONFIG.lieu, CONFIG.adresse].filter(Boolean);
+// textes des infos (refaits à chaque changement de langue)
+function renderInfos() {
+  const loc = t('locale');
+  $('#iDate').textContent = dateOK ? evDate.toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : t('soon');
+  $('#iHeure').textContent = dateOK ? evDate.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }).replace(':', LANG === 'fr' ? 'h' : ':') : t('tbd');
+  $('#iLieu').textContent = lieu.length ? lieu.join(' — ') : t('tbd');
   if (lieu.length) { const b = $('#bMaps'); b.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(lieu.join(', ')); b.hidden = false; }
-  if (CONFIG.whatsapp) { const b = $('#bRsvp'); b.href = `https://wa.me/${String(CONFIG.whatsapp).replace(/\D/g, '')}?text=${encodeURIComponent(CONFIG.messageRsvp || '')}`; b.hidden = false; }
-  if (!ok) return;
+  if (CONFIG.whatsapp) {
+    const msg = LANG === 'fr' ? (CONFIG.messageRsvp || '') : t('rsvpMsg');
+    const b = $('#bRsvp'); b.href = `https://wa.me/${String(CONFIG.whatsapp).replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`; b.hidden = false;
+  }
+  const big = $('#countdown .big-day'); if (big) big.textContent = t('bigDay');
+}
+// mise en place unique (boutons, compte à rebours)
+function fillInfos() {
+  renderInfos();
+  if (!dateOK) return;
+  const d = evDate;
   const cal = $('#bCal'); cal.hidden = false;
   cal.addEventListener('click', () => {
     const f = (x) => x.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
     const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//shayma-bilal//fr', 'BEGIN:VEVENT', `UID:${Date.now()}@shayma-bilal`, `DTSTAMP:${f(new Date())}`,
-      `DTSTART:${f(d)}`, `DTEND:${f(new Date(d.getTime() + 4 * 3600e3))}`, 'SUMMARY:Fiançailles de Shayma & Bilal',
+      `DTSTART:${f(d)}`, `DTEND:${f(new Date(d.getTime() + 4 * 3600e3))}`, `SUMMARY:${t('icsTitle')}`,
       `LOCATION:${lieu.join(', ').replace(/,/g, '\\,')}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = 'fiancailles-shayma-bilal.ics'; a.click();
   });
@@ -118,11 +152,22 @@ function fillInfos() {
   const set = (id, v) => { const el = $(id), s = String(v); if (el.textContent !== s) { el.textContent = s; gsap.fromTo(el, { y: -8, opacity: 0.3 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }); } };
   const tick = () => {
     const ms = d - Date.now(); cd.hidden = false;
-    if (ms <= 0) { cd.innerHTML = '<p class="accent">C’est le grand jour ✨</p>'; return true; }
+    if (ms <= 0) { cd.innerHTML = `<p class="accent big-day">${t('bigDay')}</p>`; return true; }
     set('#cdJ', Math.floor(ms / 864e5)); set('#cdH', Math.floor(ms / 36e5) % 24); set('#cdM', Math.floor(ms / 6e4) % 60); set('#cdS', Math.floor(ms / 1e3) % 60);
   };
   if (!tick()) { const iv = setInterval(() => { if (tick()) clearInterval(iv); }, 1000); }
 }
+
+// sélecteur de langue : en direct avant d'entrer, rechargement ensuite (les textes animés sont déjà découpés)
+$$('.langs button').forEach((b) => b.addEventListener('click', () => {
+  const l = b.dataset.lang; if (!LANGS.includes(l) || l === LANG) return;
+  try { localStorage.setItem('lang', l); } catch (e) {}
+  const u = new URL(location.href); u.searchParams.set('lang', l);
+  if (entered) { location.href = u.toString(); return; }
+  history.replaceState(null, '', u.toString());
+  applyLang(l); renderInfos(); if (sc) sc.resize();
+  const s = $('#sound'); if (!s.hidden) s.setAttribute('aria-label', muted ? t('soundOn') : t('soundOff'));
+}));
 
 /* ---------------- dessin des ornements ---------------- */
 function drawSVG(root, { duration = 2.2, delay = 0 } = {}) {
@@ -162,6 +207,7 @@ function onResize() {
 /* ---------- 1. la lune se lève ---------- */
 function introReveal() {
   const S = sc.S;
+  S.cam.y = S.cam.ty = sc.introY(sc.introDist());
   const qLat = SplitText.create('.qamar-lat', { type: 'chars' });
   const tl = gsap.timeline();
   tl.to('#loader', { autoAlpha: 0, duration: 1.1, ease: 'power2.inOut' })
@@ -199,6 +245,7 @@ function armEnter() {
 /* ---------- 2. plongée dans la lune ---------- */
 function enter() {
   if (entered) return; entered = true;
+  document.body.classList.add('cine');
   startMusic();
   navigator.vibrate?.(18);
   cursor.classList.remove('big');
@@ -261,7 +308,7 @@ $('#skip').addEventListener('click', () => master && master.progress(1));
 /* ---------- 3. le scroll prend le relais ---------- */
 function unlock() {
   if (unlocked) return; unlocked = true;
-  document.body.classList.remove('locked');
+  document.body.classList.remove('locked', 'cine'); document.body.classList.add('unlocked');
   if (sc) { sc.S.mode = 'scroll'; sc.buildScrollPath(); }
   lenis.start();
   setupScroll();
