@@ -478,14 +478,75 @@
   texte("demande-pour", C.pour || "");
   texte("question", C.question || "Veux-tu m'épouser ?");
   var reponses = $("reponses");
-  (C.boutons && C.boutons.length ? C.boutons : ["Oui 💍"]).forEach(function (libelle) {
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "btn";
-    b.textContent = libelle;
-    b.addEventListener("click", direOui);
-    reponses.appendChild(b);
-  });
+  var MAX_NON = Math.max(1, parseInt(C.essaisNon, 10) || 5);
+  var nbNon = 0;
+  var boutonOui = document.createElement("button");
+  boutonOui.type = "button";
+  boutonOui.className = "btn btn-oui";
+  boutonOui.textContent = C.oui || "Oui 💍";
+  boutonOui.addEventListener("click", direOui);
+  var boutonNon = document.createElement("button");
+  boutonNon.type = "button";
+  boutonNon.className = "btn btn-non";
+  boutonNon.textContent = C.non || "Non";
+  boutonNon.addEventListener("click", direNon);
+  reponses.appendChild(boutonOui);
+  reponses.appendChild(boutonNon);
+
+  // « Non » : le bouton fuit ailleurs sur l'écran et rapetisse, « Oui » grossit
+  function direNon() {
+    nbNon++;
+    var k = nbNon / MAX_NON;
+    S.non(nbNon);
+    vibrer(30);
+    var echelleOui = 1 + 1.1 * k;                 // jusqu'à environ 2× plus grand
+    boutonOui.style.setProperty("--k", echelleOui.toFixed(3));
+    boutonOui.classList.add("grandit");
+    reponses.style.padding = ((echelleOui - 1) * 26).toFixed(0) + "px 0";
+
+    var r = boutonNon.getBoundingClientRect();
+    if (!boutonNon.classList.contains("fuit")) {
+      // on le sort de la mise en page pour pouvoir le placer n'importe où
+      document.body.appendChild(boutonNon);
+      boutonNon.classList.add("fuit");
+      boutonNon.style.left = r.left + "px";
+      boutonNon.style.top = r.top + "px";
+      void boutonNon.offsetWidth;
+    }
+    if (nbNon >= MAX_NON) {
+      var c = centreDe(boutonNon);
+      boutonNon.classList.add("disparait");
+      eclat(c.x, c.y, 14, 90);
+      setTimeout(function () { boutonNon.remove(); }, 450);
+      boutonOui.focus({ preventScroll: true });
+      return;
+    }
+    var echelleNon = 1 - 0.17 * nbNon;
+    boutonNon.style.setProperty("--k", echelleNon.toFixed(3));
+    // taille réelle (sans l'échelle) et taille visible une fois rapetissé
+    var W0 = boutonNon.offsetWidth, H0 = boutonNon.offsetHeight;
+    var w = W0 * echelleNon, h = H0 * echelleNon;
+    // place que prendra « Oui » une fois grossi (+ une marge)
+    var ro = boutonOui.getBoundingClientRect();
+    var ox = ro.left + ro.width / 2, oy = ro.top + ro.height / 2;
+    var ow = boutonOui.offsetWidth * echelleOui / 2 + 30, oh = boutonOui.offsetHeight * echelleOui / 2 + 40;
+    var Wv = window.innerWidth, Hv = window.innerHeight, marge = 16;
+    var choix = null, meilleurScore = -1;
+    for (var essai = 0; essai < 60; essai++) {
+      var x = marge + Math.random() * Math.max(1, Wv - w - 2 * marge);
+      var y = 72 + Math.random() * Math.max(1, Hv - h - 72 - marge);
+      var surOui = x < ox + ow && x + w > ox - ow && y < oy + oh && y + h > oy - oh;
+      if (surOui) continue;
+      var score = Math.hypot(x - r.left, y - r.top);
+      if (score > meilleurScore) { meilleurScore = score; choix = { x: x, y: y }; }
+      if (score > Math.min(Wv, Hv) * 0.45) break;
+    }
+    if (choix) {
+      // l'échelle se fait depuis le centre : on décale pour que le coin visible tombe en (x, y)
+      boutonNon.style.left = (choix.x - (W0 - w) / 2).toFixed(0) + "px";
+      boutonNon.style.top = (choix.y - (H0 - h) / 2).toFixed(0) + "px";
+    }
+  }
   texte("apres-oui-texte", C.apresOui);
   var numero = String(C.whatsapp || "").replace(/\D/g, "");
   if (numero) {
@@ -499,6 +560,7 @@
     vibrer([60, 60, 60, 60, 200]);
     if (scene3d) scene3d.celebrer();
     var b = centreDe($("question"));
+    if (boutonNon.parentNode) boutonNon.remove();
     reponses.hidden = true;
     $("question").hidden = true;
     $("demande-pour").hidden = true;

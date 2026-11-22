@@ -94,6 +94,12 @@ window.Sons = (function () {
       }
     },
     bague: function () { cloche(1318.5, 0, 0.12); cloche(1975.5, 0.18, 0.08); cloche(2637, 0.36, 0.05); },
+    // « Non » : petit « bloup » qui descend, et un tintement pour le « Oui » qui grossit
+    non: function (n) {
+      note(620 - n * 45, 0, 0.18, { type: "triangle", vol: 0.1, vers: 240 });
+      souffle(0, 0.2, { de: 2200, vers: 500, vol: 0.05 });
+      note(880 + n * 140, 0.14, 0.3, { type: "sine", vol: 0.07 });
+    },
     oui: function () {
       var gamme = [523, 659, 784, 1047, 1319, 1568];
       gamme.forEach(function (f, i) { note(f, i * 0.08, 0.5, { type: "triangle", vol: 0.1 }); });

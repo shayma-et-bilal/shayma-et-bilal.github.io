@@ -70,7 +70,9 @@ window.CADEAU = {
 
   // 5. La demande
   question: "Veux-tu m'épouser ?",
-  boutons: ["Oui 💍", "Évidemment ❤"],          // les deux veulent dire oui
+  oui: "Oui 💍",
+  non: "Non",
+  essaisNon: 5,      // à chaque « Non », le bouton fuit et rapetisse, « Oui » grossit ; au 5e, « Non » disparaît
   apresOui: "Tu viens de faire de moi l'homme le plus heureux du monde.",
 
   // Optionnel : ton numéro WhatsApp pour qu'elle t'envoie sa réponse.

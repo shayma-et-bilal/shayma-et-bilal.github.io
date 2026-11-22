@@ -274,7 +274,17 @@ h2:focus { outline: none; }
 .demande .petit { animation: apparaitre .6s 1s ease both; }
 .question { margin: 8px 0 26px !important; animation: apparaitre .8s 1.3s ease both; }
 .reponses { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; animation: apparaitre .6s 1.9s ease both; }
-.reponses .btn:nth-child(2) { background: transparent; color: var(--rose-clair); border: 2px solid var(--rose-clair); box-shadow: none; }
+.reponses { transition: padding .5s ease; }
+.btn-non { background: transparent; color: var(--rose-clair); border: 2px solid var(--rose-clair); box-shadow: none; }
+.btn-oui, .btn-non { --k: 1; transform: scale(var(--k)); transition: transform .55s cubic-bezier(.3, 1.6, .5, 1); }
+.btn-oui:active, .btn-non:active { transform: scale(calc(var(--k) * .95)); }
+.btn-oui.grandit { position: relative; z-index: 3; animation: pulserOui 1.4s ease-in-out infinite; box-shadow: 0 10px 34px rgba(255, 92, 138, .6); }
+@keyframes pulserOui { 50% { transform: scale(calc(var(--k) * 1.07)); } }
+.btn-non.fuit {
+  position: fixed; z-index: 30; margin: 0; white-space: nowrap; background: rgba(26, 11, 30, .55);
+  transition: left .5s cubic-bezier(.3, 1.4, .5, 1), top .5s cubic-bezier(.3, 1.4, .5, 1), transform .5s cubic-bezier(.3, 1.6, .5, 1), opacity .35s ease;
+}
+.btn-non.disparait { transform: scale(0) rotate(-25deg); opacity: 0; pointer-events: none; }
 .apres-oui { animation: apparaitre .8s ease both; }
 .apres-oui .grand { font-size: clamp(2.4rem, 11vw, 3.2rem); color: #fff; margin: 0 0 10px; }
 .apres-oui p { font-size: 1.1rem; line-height: 1.6; margin: 0 0 22px; }
