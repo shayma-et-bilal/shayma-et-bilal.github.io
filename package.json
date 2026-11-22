@@ -5,7 +5,8 @@
   "scripts": {
     "build": "esbuild src/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/main.js",
     "dev": "esbuild src/main.js --bundle --format=esm --target=es2020 --outfile=dist/main.js --watch",
-    "build:cadeau": "esbuild cadeau/src/cadeau3d.js --bundle --minify --format=esm --target=es2020 --outfile=cadeau/dist/cadeau3d.js"
+    "build:cadeau": "esbuild cadeau/src/cadeau3d.js --bundle --minify --format=esm --target=es2020 --outfile=cadeau/dist/cadeau3d.js",
+    "build:jardin": "esbuild cadeau/src/jardin.js --bundle --minify --format=esm --target=es2020 --outfile=cadeau/dist/jardin.js"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

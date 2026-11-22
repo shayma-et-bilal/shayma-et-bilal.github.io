@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="style.css">
+<link rel="modulepreload" href="dist/jardin.js">
 </head>
 <body>
 <div class="sky" aria-hidden="true"></div>
@@ -22,14 +23,9 @@
   <p>Tourne ton téléphone<br>pour découvrir la surprise</p>
 </div>
 
-<!-- 0. Les mots en forme de cœur (premier écran) -->
-<section id="e-intro" class="ecran ecran-intro actif" aria-labelledby="intro-centre">
-  <div class="coeur-mots" id="coeur-mots">
-    <svg class="contour" id="contour" aria-hidden="true"><path id="contour-trace"/></svg>
-    <div class="mots" id="mots" aria-hidden="true"></div>
-    <p class="centre script" id="intro-centre"></p>
-    <span class="pointe" id="pointe" aria-hidden="true"></span>
-  </div>
+<!-- 0. Le jardin : une fleur pousse pour chaque mot doux (premier écran) -->
+<section id="e-intro" class="ecran ecran-intro actif" aria-label="Mots doux">
+  <div class="jardin" id="jardin"></div>
   <p class="lecteur-seul" id="intro-texte"></p>
   <p class="toucher" id="intro-toucher" aria-hidden="true">Touche pour tout voir</p>
   <button type="button" class="btn suivant cache" id="intro-suivant" data-vers="e-code" aria-hidden="true" tabindex="-1"></button>

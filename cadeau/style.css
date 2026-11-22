@@ -117,63 +117,21 @@ body.fin .son { opacity: .35; }
 .suivant { margin-top: 26px; animation: apparaitre .6s .3s ease both; }
 @keyframes apparaitre { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-/* ---------- 0. Intro : les mots en forme de cœur ---------- */
+/* ---------- 0. Le jardin ---------- */
 .lecteur-seul { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.coeur-mots { position: relative; flex: none; margin: 0; transform-origin: 50% 46%; }
-.coeur-mots.bat { animation: battreCoeur 2.6s ease-in-out infinite; }
-@keyframes battreCoeur { 0%, 42%, 100% { transform: scale(1); } 8% { transform: scale(1.035); } 16% { transform: scale(.995); } 25% { transform: scale(1.025); } }
-.contour { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.contour path {
-  fill: rgba(201, 138, 143, 0); stroke: var(--rose); stroke-width: 1.6; stroke-linejoin: round;
-  filter: drop-shadow(0 0 6px rgba(201, 138, 143, .85));
-  transition: stroke-dashoffset 1.8s cubic-bezier(.6, 0, .2, 1), opacity 1.4s ease, fill 1.4s ease;
-}
-.coeur-mots.trace .contour path { stroke-dashoffset: 0 !important; }
-.coeur-mots.complet .contour path { opacity: .55; fill: rgba(201, 138, 143, .07); }
-.mots { position: absolute; inset: 0; }
-.pointe {
-  position: absolute; opacity: 0; transform: scale(.3);
-  background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff5c8a' d='M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 5.3 3.1 1.7-1.9 3.2-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z'/%3E%3C/svg%3E");
-  filter: drop-shadow(0 0 6px rgba(201, 138, 143, .9));
-  transition: opacity .8s ease .9s, transform 1s cubic-bezier(.3, 1.6, .5, 1) .9s;
-}
-.coeur-mots.complet .pointe { opacity: 1; transform: scale(1); }
-.coeur-mots.bat .pointe { animation: battre 1.3s ease-in-out infinite; }
-.mot {
-  position: absolute; white-space: nowrap; margin: 0;
-  font-family: "Nunito", system-ui, sans-serif; font-weight: 600; line-height: 1.24;
-  opacity: 0; transform: translateY(8px) scale(.85); filter: blur(4px);
-  transition: opacity .7s ease, transform .8s cubic-bezier(.2, .9, .2, 1.2), filter .7s ease, color 1s ease, text-shadow 1s ease;
-}
-.mot.vu { opacity: 1; transform: none; filter: none; }
-.mot.c0, .mot.c1 { color: #f4ece1; }
-.mot.c2 { color: #d6b47a; }
-.mot.sep { color: var(--rose); opacity: .6; }
-.mot.sep.vu { opacity: .6; }
-.mot.nom { color: #fff; text-shadow: 0 0 10px rgba(201, 138, 143, .8); }
-.mot.eclaire { color: #fff; text-shadow: 0 0 8px #fff, 0 0 18px var(--rose); }
-.centre {
-  position: absolute; left: 50%; top: 43%; margin: 0; line-height: 1; white-space: nowrap;
-  color: #fff; letter-spacing: .3em; opacity: 0; filter: blur(10px);
-  transform: translate(-50%, -50%) scale(.55);
-  transition: opacity 1.2s ease, filter 1.2s ease, transform 1.6s cubic-bezier(.2, 1.35, .4, 1), letter-spacing 1.8s cubic-bezier(.2, .8, .2, 1);
-}
-.centre.vu {
-  opacity: 1; filter: none; letter-spacing: .02em; transform: translate(-50%, -50%) scale(1);
-  animation: lueurCentre 2.6s 1.2s ease-in-out infinite;
-  text-shadow: 0 0 14px rgba(201, 138, 143, .95), 0 0 34px rgba(214, 180, 122, .55);
-}
-@keyframes lueurCentre {
-  50% { text-shadow: 0 0 22px rgba(201, 138, 143, 1), 0 0 56px rgba(214, 180, 122, .8), 0 0 90px rgba(201, 138, 143, .45); }
-}
+.ecran-intro { max-width: none; justify-content: flex-end; padding-bottom: calc(34px + env(safe-area-inset-bottom)); }
+.jardin { position: absolute; inset: 0; z-index: 0; }
+#intro-suivant { position: relative; z-index: 2; margin-top: 0; }
+#intro-suivant.cache { visibility: hidden; animation: none; }
 .toucher {
-  position: absolute; left: 0; right: 0; bottom: calc(26px + env(safe-area-inset-bottom));
-  margin: 0; font-size: .85rem; color: var(--doux); opacity: 0; transition: opacity 1s ease;
+  position: absolute; left: 0; right: 0; bottom: calc(46px + env(safe-area-inset-bottom)); z-index: 2;
+  margin: 0; font-size: .85rem; color: var(--doux); opacity: 0; transition: opacity 1s ease; pointer-events: none;
 }
 .toucher.visible { opacity: .75; animation: respirer 2.4s ease-in-out infinite; }
 @keyframes respirer { 50% { opacity: .55; } }
-#intro-suivant { margin-top: 30px; }
-#intro-suivant.cache { visibility: hidden; animation: none; }
+.jardin-secours { position: absolute; inset: 15% 24px auto; text-align: center; }
+.jardin-secours .script { font-size: 3.2rem; margin: 0 0 18px; color: var(--creme); }
+.jardin-secours p:last-child { font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-size: 1.15rem; line-height: 1.7; color: var(--rose-clair); }
 
 /* ---------- 1. Cadenas ---------- */
 .verrou.ouvert { transition: opacity .55s ease .25s, transform .7s ease .25s, filter .55s ease .25s; opacity: 0; transform: scale(1.04); filter: blur(6px); pointer-events: none; }

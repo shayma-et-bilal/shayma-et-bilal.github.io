@@ -57,6 +57,7 @@
     if (actuel) actuel.classList.add("sort");
     setTimeout(function () {
       if (actuel) { actuel.hidden = true; actuel.classList.remove("actif", "sort", "entre"); }
+      if (actuel && actuel.id === "e-intro" && jardin) { jardin.detruire(); jardin = null; }
       suivant.hidden = false;
       suivant.classList.add("actif", "entre");
       suivant.addEventListener("animationend", function finEntree(e) {
@@ -97,248 +98,59 @@
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
 
-  /* ---------- 0. Les mots en forme de cœur ---------- */
+  /* ---------- 0. Le jardin : une fleur pousse pour chaque mot doux ---------- */
   var INTRO = C.intro || {};
   var PHRASES = (INTRO.mots || []).filter(Boolean).map(typo);
-  var boiteCoeur = $("coeur-mots"), zoneMots = $("mots"), centre = $("intro-centre");
-  var introFinie = false, introLancee = false, sautDemande = false, minuteurs = [], phrasesVues = {};
-  texte("intro-centre", INTRO.centre || "ma paix");
+  var CENTRE = typo(INTRO.centre || "ma paix");
+  var jardin = null, introFinie = false, introLancee = false, sautDemande = false;
   texte("intro-suivant", INTRO.bouton || "Continuer");
-  texte("intro-texte", (INTRO.centre || "ma paix") + " : " + PHRASES.join(", "));
+  texte("intro-texte", CENTRE + " : " + PHRASES.join(", "));
 
-  // Contour du cœur (courbe classique), en coordonnées de la boîte
-  function contourCoeur(L, H) {
-    var brut = [], minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-    for (var i = 0; i < 360; i++) {
-      var t = (i / 360) * Math.PI * 2;
-      var x = 16 * Math.pow(Math.sin(t), 3);
-      var y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-      brut.push([x, y]);
-      minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
-    }
-    return brut.map(function (p) {
-      return [(p[0] - minX) / (maxX - minX) * L, (p[1] - minY) / (maxY - minY) * H];
-    });
-  }
-  // Segments horizontaux de la ligne y qui sont à l'intérieur du cœur
-  function segments(poly, y) {
-    var xs = [];
-    for (var i = 0; i < poly.length; i++) {
-      var a = poly[i], b = poly[(i + 1) % poly.length];
-      if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y)) xs.push(a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0]));
-    }
-    xs.sort(function (p, q) { return p - q; });
-    var res = [];
-    for (var k = 0; k + 1 < xs.length; k += 2) res.push([xs[k], xs[k + 1]]);
-    return res;
-  }
-
-  function disposerCoeur() {
-    var L = Math.min(window.innerWidth - 16, 460);
-    var H = Math.round(L * 0.98);
-    boiteCoeur.style.width = L + "px";
-    boiteCoeur.style.height = H + "px";
-    var poly = contourCoeur(L, H);
-
-    // Tracé SVG du contour
-    var svg = $("contour");
-    svg.setAttribute("viewBox", "0 0 " + L + " " + H);
-    var trace = $("contour-trace");
-    trace.setAttribute("d", "M" + poly.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L") + " Z");
-    var longueur = trace.getTotalLength ? trace.getTotalLength() : 2000;
-    trace.style.strokeDasharray = longueur;
-    trace.style.strokeDashoffset = introFinie ? 0 : longueur;
-
-    // Le mot du centre, placé au centre visuel du cœur
-    var tailleCentre = Math.round(L * 0.135);
-    centre.style.fontSize = tailleCentre + "px";
-    var cy = H * 0.5;
-    centre.style.top = cy + "px";
-    var trou = { y1: cy - tailleCentre * 0.5, y2: cy + tailleCentre * 0.42 };
-
-    // Les mots à placer, phrase par phrase, séparés par un petit cœur
-    var jetons = [];
-    PHRASES.forEach(function (ph, i) {
-      ph.split(/\s+/).forEach(function (m, n) { jetons.push({ t: m, p: i, debut: n === 0 }); });
-      if (i < PHRASES.length - 1) jetons.push({ t: "♥", p: i, sep: true });
-    });
-    var ctx = document.createElement("canvas").getContext("2d");
-    function mesurer(f) {
-      ctx.font = "600 " + f + "px Nunito, system-ui, sans-serif";
-      jetons.forEach(function (j) { j.w = ctx.measureText(j.t).width; });
-      var esp = ctx.measureText(" ").width * 1.1;
-      // largeur de chaque phrase entière (pour éviter de la couper quand elle tient sur la ligne suivante)
-      jetons.forEach(function (j, idx) {
-        if (!j.debut) return;
-        var w = 0, k2 = idx;
-        while (k2 < jetons.length && jetons[k2].p === j.p && !jetons[k2].sep) { w += jetons[k2].w + (k2 > idx ? esp : 0); k2++; }
-        j.wPhrase = w;
-      });
-      return ctx.measureText(" ").width;
-    }
-
-    // Essaie une taille de texte : renvoie les lignes si tout rentre, sinon null
-    function essayer(f, interligne) {
-      var espace = mesurer(f) * 1.1, pas = f * (interligne || 1.28);
-      // 1. Les emplacements : pour chaque ligne, les morceaux à l'intérieur du cœur (hors « ma paix »)
-      var rangs = [];
-      for (var y = pas * 0.9; y < H - pas * 0.3; y += pas) {
-        var segs = [];
-        segments(poly, y - f * 0.32).forEach(function (s1) {
-          segments(poly, y + f * 0.32).forEach(function (s2) {
-            var a = Math.max(s1[0], s2[0]) + f * 0.7, b = Math.min(s1[1], s2[1]) - f * 0.7;
-            if (b - a > 0) segs.push([a, b]);
-          });
-        });
-        // bande libre autour de « ma paix » : le mot respire, le texte passe au-dessus et en dessous
-        if (y + f * 0.45 > trou.y1 && y - f * 0.45 < trou.y2) segs = [];
-        rangs.push({ y: y, segs: segs.filter(function (s) { return s[1] - s[0] > f * 2.5; }) });
-      }
-      // 2. Ordre de lecture : là où la ligne est coupée en deux (les deux lobes, les côtés de « ma paix »),
-      //    on remplit d'abord toute la colonne de gauche, puis celle de droite
-      var places = [];
-      for (var i = 0; i < rangs.length;) {
-        var nb = rangs[i].segs.length, j = i;
-        while (j < rangs.length && rangs[j].segs.length === nb) j++;
-        for (var c = 0; c < nb; c++) for (var r = i; r < j; r++) places.push({ y: rangs[r].y, s: rangs[r].segs[c], haut: r === i });
-        i = j;
-      }
-      // 3. Remplissage : un « ♥ » reste collé au mot qui le précède
-      var lignes = [], k = 0;
-      places.forEach(function (pl, ip) {
-        if (k >= jetons.length) return;
-        var largeur = pl.s[1] - pl.s[0], pris = [], total = 0;
-        // ligne trop courte pour la phrase qui commence, alors que la suivante l'accueille entière : on la laisse vide
-        var suiv = places[ip + 1];
-        if (pl.haut && jetons[k].debut && jetons[k].wPhrase > largeur && suiv && jetons[k].wPhrase <= suiv.s[1] - suiv.s[0]) return;
-        while (k < jetons.length) {
-          var j0 = jetons[k], groupe = [j0], w = j0.w;
-          if (jetons[k + 1] && jetons[k + 1].sep) { groupe.push(jetons[k + 1]); w += espace + jetons[k + 1].w; }
-          var ajoutW = w + (pris.length ? espace : 0);
-          if (total + ajoutW > largeur) break;
-          // une phrase qui tiendrait entière sur une ligne vide ne commence pas en fin de ligne
-          if (pris.length && j0.debut && total + espace + j0.wPhrase > largeur && j0.wPhrase <= largeur) break;
-          pris = pris.concat(groupe); total += ajoutW; k += groupe.length;
-        }
-        if (pris.length) lignes.push({ y: pl.y, x1: pl.s[0], x2: pl.s[1], jetons: pris, utilise: total });
-      });
-      return k >= jetons.length ? { lignes: lignes, espace: espace, f: f } : null;
-    }
-    // la plus grande taille qui fait tout tenir (balayage : les règles de mise en page ne sont pas monotones)
-    var meilleur = null;
-    for (var essaiF = 26; essaiF >= 6 && !meilleur; essaiF -= 0.1) meilleur = essayer(essaiF);
-    // puis on cherche, autour de cette taille, la combinaison taille × interlignage qui remplit le cœur
-    // le plus bas possible (le texte doit descendre vers la pointe), sans perdre plus de 0,6 px de taille
-    if (meilleur) {
-      var fMax = meilleur.f, score = -1e9;
-      for (var ff = fMax; ff >= fMax - 0.6; ff -= 0.1) {
-        for (var m = 1.28; m <= 1.9; m += 0.02) {
-          var r2 = essayer(ff, m);
-          if (!r2) continue;
-          var bas = 0;
-          r2.lignes.forEach(function (li) { if (li.y > bas) bas = li.y; });
-          var note = bas + 30 * (ff - fMax);
-          if (note > score) { score = note; meilleur = r2; }
-        }
-      }
-      mesurer(meilleur.f);
-    }
-    if (!meilleur) meilleur = essayer(6);
-    if (!meilleur) return;
-
-    // Création des mots, lignes justifiées
-    zoneMots.textContent = "";
-    var f = meilleur.f;
-    // petit cœur lumineux dans la pointe, trop étroite pour des mots
-    var basTexte = 0;
-    meilleur.lignes.forEach(function (li) { if (li.y > basTexte) basTexte = li.y; });
-    var pointe = $("pointe"), taillePointe = Math.max(14, f * 1.5);
-    pointe.style.width = pointe.style.height = taillePointe + "px";
-    pointe.style.left = (L / 2 - taillePointe / 2) + "px";
-    pointe.style.top = (basTexte + (H - basTexte) * 0.42 - taillePointe / 2) + "px";
-    meilleur.lignes.forEach(function (li, idx) {
-      var reste = li.x2 - li.x1 - li.utilise, nb = li.jetons.length;
-      var derniere = idx === meilleur.lignes.length - 1;
-      var ajout = (nb > 1 && !derniere && reste / (nb - 1) < f * 0.9) ? reste / (nb - 1) : 0;
-      var x = (ajout || nb === 1 || derniere) ? li.x1 + (ajout ? 0 : reste / 2) : li.x1;
-      li.jetons.forEach(function (j) {
-        var s = document.createElement("span");
-        s.className = "mot c" + (j.p % 3) + (j.sep ? " sep" : "") + (/^[A-ZÀ-Ý]/.test(j.t) ? " nom" : "");
-        s.textContent = j.t;
-        s.dataset.p = j.p;
-        s.style.left = x.toFixed(1) + "px";
-        s.style.top = (li.y - f * 0.62).toFixed(1) + "px";
-        s.style.fontSize = f.toFixed(2) + "px";
-        if (introFinie || phrasesVues[j.p]) s.classList.add("vu");
-        zoneMots.appendChild(s);
-        x += j.w + meilleur.espace + ajout;
-      });
-    });
-  }
-
-  function reveler(p) {
-    phrasesVues[p] = true;
-    zoneMots.querySelectorAll('[data-p="' + p + '"]').forEach(function (s, i) {
-      s.style.transitionDelay = (i * 0.045).toFixed(3) + "s";
-      s.classList.add("vu", "eclaire");
-      setTimeout(function () { s.classList.remove("eclaire"); }, 900 + i * 45);
-    });
-  }
-  function finirIntro(vite) {
+  function finIntro() {
     if (introFinie) return;
     introFinie = true;
-    minuteurs.forEach(clearTimeout);
-    if (vite) zoneMots.querySelectorAll(".mot").forEach(function (s) { s.style.transitionDelay = "0s"; s.classList.add("vu"); });
-    $("contour-trace").style.strokeDashoffset = 0;
-    boiteCoeur.classList.add("complet");
-    $("intro-toucher").hidden = true;
-    setTimeout(function () {
-      centre.classList.add("vu");
-      var c = centreDe(centre);
-      eclat(c.x, c.y, 30, 200);
-    }, vite ? 150 : 500);
-    setTimeout(function () {
-      boiteCoeur.classList.add("bat");
-      var suivantIntro = $("intro-suivant");
-      suivantIntro.classList.remove("cache");
-      suivantIntro.removeAttribute("aria-hidden");
-      suivantIntro.removeAttribute("tabindex");
-    }, vite ? 1100 : 1900);
+    $("intro-toucher").classList.remove("visible");
+    var suivantIntro = $("intro-suivant");
+    suivantIntro.classList.remove("cache");
+    suivantIntro.removeAttribute("aria-hidden");
+    suivantIntro.removeAttribute("tabindex");
+  }
+  // Si le module du jardin ne se charge pas : les mots simplement, en texte
+  function jardinDeSecours() {
+    var bloc = document.createElement("div");
+    bloc.className = "jardin-secours";
+    var centre = document.createElement("p");
+    centre.className = "script";
+    centre.textContent = CENTRE;
+    var liste = document.createElement("p");
+    liste.textContent = PHRASES.join(" · ");
+    bloc.appendChild(centre);
+    bloc.appendChild(liste);
+    $("jardin").appendChild(bloc);
+    finIntro();
   }
   function lancerIntro() {
     if (introLancee) return;
     introLancee = true;
-    disposerCoeur();
-    if (sautDemande || reduit || !PHRASES.length) return finirIntro(true);
-    boiteCoeur.classList.add("trace");
-    var t = 1300, pas = 640;
-    PHRASES.forEach(function (_, i) {
-      minuteurs.push(setTimeout(function () { reveler(i); }, t));
-      t += pas;
-      pas = Math.max(380, pas * 0.95);
-    });
-    minuteurs.push(setTimeout(function () { finirIntro(false); }, t + 500));
-    minuteurs.push(setTimeout(function () { if (!introFinie) $("intro-toucher").classList.add("visible"); }, 2600));
+    import("./dist/jardin.js").then(function (mod) {
+      jardin = mod.creerJardin($("jardin"), { phrases: PHRASES, centre: CENTRE, reduit: reduit, onFin: finIntro });
+      jardin.lancer();
+      if (sautDemande) jardin.toutMontrer();
+      setTimeout(function () { if (!introFinie) $("intro-toucher").classList.add("visible"); }, 9000);
+    }).catch(jardinDeSecours);
+  }
+  function passerIntro() {
+    if (introFinie) return;
+    if (!jardin) { sautDemande = true; return; }
+    jardin.toutMontrer();
   }
   $("e-intro").addEventListener("click", function (e) {
-    if (introFinie || e.target.closest("button")) return;
-    if (!introLancee) { sautDemande = true; return; }
-    finirIntro(true);
+    if (!e.target.closest("button")) passerIntro();
   });
   document.addEventListener("keydown", function (e) {
     if (introFinie || !$("e-intro").classList.contains("actif") || (e.key !== "Enter" && e.key !== " ")) return;
     e.preventDefault();
-    if (!introLancee) { sautDemande = true; return; }
-    finirIntro(true);
-  });
-  var attenteRedim, largeurPrec = window.innerWidth;
-  window.addEventListener("resize", function () {
-    if (!$("e-intro").classList.contains("actif")) return;
-    // la barre d'adresse qui apparaît change seulement la hauteur : on ne remet pas tout en page
-    if (window.innerWidth === largeurPrec) return;
-    largeurPrec = window.innerWidth;
-    clearTimeout(attenteRedim);
-    attenteRedim = setTimeout(disposerCoeur, 200);
+    passerIntro();
   });
 
   /* ---------- 1. Le code ---------- */
@@ -796,12 +608,8 @@
   document.head.appendChild(feuille);
   var polices = feuillePrete.then(function () {
     return (document.fonts && document.fonts.load)
-      ? Promise.all([document.fonts.load("600 16px Nunito"), document.fonts.load("40px 'Great Vibes'")])
+      ? Promise.all([document.fonts.load("600 16px Nunito"), document.fonts.load("40px 'Great Vibes'"), document.fonts.load("italic 500 16px 'Cormorant Garamond'")])
       : null;
   });
   Promise.race([polices, new Promise(function (r) { setTimeout(r, 2500); })]).then(lancerIntro, lancerIntro);
-  // si les polices arrivent après coup, les mots sont remesurés (sinon ils pourraient déborder du cœur)
-  polices.then(function () {
-    if (introLancee && $("e-intro").classList.contains("actif")) disposerCoeur();
-  }, function () {});
 })();
