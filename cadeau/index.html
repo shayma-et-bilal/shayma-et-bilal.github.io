@@ -17,8 +17,20 @@
 
 <button type="button" class="son" id="son" aria-pressed="true" aria-label="Couper le son">🔊</button>
 
+<!-- 0. Les mots en forme de cœur (premier écran) -->
+<section id="e-intro" class="ecran ecran-intro actif" aria-labelledby="intro-centre">
+  <div class="coeur-mots" id="coeur-mots">
+    <svg class="contour" id="contour" aria-hidden="true"><path id="contour-trace"/></svg>
+    <div class="mots" id="mots" aria-hidden="true"></div>
+    <p class="centre script" id="intro-centre"></p>
+  </div>
+  <p class="lecteur-seul" id="intro-texte"></p>
+  <p class="toucher" id="intro-toucher" aria-hidden="true">Touche pour tout voir</p>
+  <button type="button" class="btn suivant" id="intro-suivant" data-vers="e-code" hidden></button>
+</section>
+
 <!-- 1. Le code -->
-<section id="e-code" class="ecran verrou actif" aria-labelledby="verrou-titre">
+<section id="e-code" class="ecran verrou" aria-labelledby="verrou-titre" hidden>
   <div class="cadenas" aria-hidden="true">
     <svg viewBox="0 0 120 120">
       <path class="anse" d="M40 52V38a20 20 0 0 1 40 0v14" fill="none" stroke-width="9" stroke-linecap="round"/>

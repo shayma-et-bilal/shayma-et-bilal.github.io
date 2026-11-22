@@ -3,6 +3,7 @@
 Page pour téléphone, à ouvrir avec le QR code. Adresse : https://shayma-et-bilal.github.io/cadeau/
 
 ## Déroulé
+0. **Les mots en cœur** (premier écran, dès le scan) : le contour d'un cœur se dessine, puis tes mots doux le remplissent phrase par phrase. « ma paix » s'allume au centre et le cœur se met à battre. Un toucher affiche tout d'un coup, puis le bouton « Continuer » mène au code. Les phrases se règlent dans `contenu.js` (`intro`). La mise en page s'adapte toute seule à la longueur du texte et à la taille de l'écran.
 1. **Code secret** : cadenas en forme de cœur avec un clavier à chiffres.
 2. **Photos** : vos photos façon polaroid, à faire glisser.
 3. **Lettre** : une enveloppe à toucher, qui s'ouvre sur ta lettre.

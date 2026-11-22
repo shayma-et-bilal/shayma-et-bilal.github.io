@@ -7,6 +7,39 @@
   - Photos : mets tes fichiers dans le dossier photos/ puis écris leur nom ici.
 */
 window.CADEAU = {
+  // 0. Le premier écran, dès qu'elle scanne le QR code : les mots forment un cœur
+  intro: {
+    centre: "ma paix",
+    mots: [
+      "mon monde",
+      "celle qui touche mon âme",
+      "celle qui apaise mon âme",
+      "ma princesse",
+      "Qamary",
+      "celle que mon âme aime",
+      "celle qui fait battre mon cœur",
+      "tes yeux sont mes bijoux dans cette dunya",
+      "tu es ma lune et tes yeux des étoiles",
+      "tu es mon soleil",
+      "mon amour",
+      "mon puzzle",
+      "ma chérie",
+      "ma SHIMA",
+      "mon bébé",
+      "la plus belle du monde",
+      "la plus intelligente",
+      "la plus gentille",
+      "la plus cultivée",
+      "la plus sincère",
+      "la plus juste",
+      "la plus marrante",
+      "la plus folle",
+      "la plus douce",
+      "la plus marocaine"
+    ],
+    bouton: "Continuer"
+  },
+
   // 1. Le code secret à taper (4 à 6 chiffres)
   code: "1402",
   indice: "Indice : notre date à nous (JJMM)",   // "" pour ne rien afficher

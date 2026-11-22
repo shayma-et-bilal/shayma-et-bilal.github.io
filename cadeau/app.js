@@ -71,6 +71,193 @@
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
 
+  /* ---------- 0. Les mots en forme de cœur ---------- */
+  var INTRO = C.intro || {};
+  var PHRASES = (INTRO.mots || []).filter(Boolean);
+  var boiteCoeur = $("coeur-mots"), zoneMots = $("mots"), centre = $("intro-centre");
+  var introFinie = false, minuteurs = [], phrasesVues = {};
+  texte("intro-centre", INTRO.centre || "ma paix");
+  texte("intro-suivant", (INTRO.bouton || "Continuer") + " ❤");
+  texte("intro-texte", (INTRO.centre || "ma paix") + " : " + PHRASES.join(", "));
+
+  // Contour du cœur (courbe classique), en coordonnées de la boîte
+  function contourCoeur(L, H) {
+    var brut = [], minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    for (var i = 0; i < 360; i++) {
+      var t = (i / 360) * Math.PI * 2;
+      var x = 16 * Math.pow(Math.sin(t), 3);
+      var y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+      brut.push([x, y]);
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
+    return brut.map(function (p) {
+      return [(p[0] - minX) / (maxX - minX) * L, (p[1] - minY) / (maxY - minY) * H];
+    });
+  }
+  // Segments horizontaux de la ligne y qui sont à l'intérieur du cœur
+  function segments(poly, y) {
+    var xs = [];
+    for (var i = 0; i < poly.length; i++) {
+      var a = poly[i], b = poly[(i + 1) % poly.length];
+      if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y)) xs.push(a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0]));
+    }
+    xs.sort(function (p, q) { return p - q; });
+    var res = [];
+    for (var k = 0; k + 1 < xs.length; k += 2) res.push([xs[k], xs[k + 1]]);
+    return res;
+  }
+
+  function disposerCoeur() {
+    var L = Math.min(window.innerWidth - 16, 460);
+    var H = Math.round(L * 0.9);
+    boiteCoeur.style.width = L + "px";
+    boiteCoeur.style.height = H + "px";
+    var poly = contourCoeur(L, H);
+
+    // Tracé SVG du contour
+    var svg = $("contour");
+    svg.setAttribute("viewBox", "0 0 " + L + " " + H);
+    var trace = $("contour-trace");
+    trace.setAttribute("d", "M" + poly.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L") + " Z");
+    var longueur = trace.getTotalLength ? trace.getTotalLength() : 2000;
+    trace.style.strokeDasharray = longueur;
+    trace.style.strokeDashoffset = introFinie ? 0 : longueur;
+
+    // Le mot du centre, placé au centre visuel du cœur
+    var tailleCentre = Math.round(L * 0.135);
+    centre.style.fontSize = tailleCentre + "px";
+    var cy = H * 0.43;
+    centre.style.top = cy + "px";
+    centre.style.letterSpacing = "0.02em"; // mesure avec l'espacement final
+    var largeurCentre = centre.offsetWidth || tailleCentre * 3.2;
+    centre.style.letterSpacing = "";
+    var trou = { x1: L / 2 - largeurCentre / 2 - 10, x2: L / 2 + largeurCentre / 2 + 10, y1: cy - tailleCentre * 0.62, y2: cy + tailleCentre * 0.62 };
+
+    // Les mots à placer, phrase par phrase, séparés par un petit cœur
+    var jetons = [];
+    PHRASES.forEach(function (ph, i) {
+      ph.split(/\s+/).forEach(function (m) { jetons.push({ t: m, p: i }); });
+      if (i < PHRASES.length - 1) jetons.push({ t: "♥", p: i, sep: true });
+    });
+    var ctx = document.createElement("canvas").getContext("2d");
+    function mesurer(f) {
+      ctx.font = "700 " + f + "px Nunito, system-ui, sans-serif";
+      jetons.forEach(function (j) { j.w = ctx.measureText(j.t).width; });
+      return ctx.measureText(" ").width;
+    }
+
+    // Essaie une taille de texte : renvoie les lignes si tout rentre, sinon null
+    function essayer(f) {
+      var espace = mesurer(f) * 1.1, pas = f * 1.28, lignes = [], k = 0;
+      for (var y = pas * 0.9; y < H - pas * 0.3 && k < jetons.length; y += pas) {
+        var segs = [];
+        segments(poly, y - f * 0.32).forEach(function (s1) {
+          segments(poly, y + f * 0.32).forEach(function (s2) {
+            var a = Math.max(s1[0], s2[0]) + f * 0.7, b = Math.min(s1[1], s2[1]) - f * 0.7;
+            if (b - a > 0) segs.push([a, b]);
+          });
+        });
+        // on laisse la place au mot du centre
+        if (y + f * 0.5 > trou.y1 && y - f * 0.5 < trou.y2) {
+          var coupes = [];
+          segs.forEach(function (s) {
+            if (s[0] < trou.x1) coupes.push([s[0], Math.min(s[1], trou.x1)]);
+            if (s[1] > trou.x2) coupes.push([Math.max(s[0], trou.x2), s[1]]);
+          });
+          segs = coupes;
+        }
+        segs.forEach(function (s) {
+          var largeur = s[1] - s[0], pris = [], total = 0;
+          while (k < jetons.length) {
+            var w = jetons[k].w + (pris.length ? espace : 0);
+            if (total + w > largeur) break;
+            pris.push(jetons[k]); total += w; k++;
+          }
+          if (pris.length) lignes.push({ y: y, x1: s[0], x2: s[1], jetons: pris, utilise: total });
+        });
+      }
+      return k >= jetons.length ? { lignes: lignes, espace: espace, f: f } : null;
+    }
+    var bas = 6, haut = 40, meilleur = null;
+    for (var n = 0; n < 18; n++) {
+      var milieu = (bas + haut) / 2, r = essayer(milieu);
+      if (r) { meilleur = r; bas = milieu; } else haut = milieu;
+    }
+    if (!meilleur) meilleur = essayer(6);
+    if (!meilleur) return;
+
+    // Création des mots, lignes justifiées
+    zoneMots.textContent = "";
+    var f = meilleur.f;
+    meilleur.lignes.forEach(function (li, idx) {
+      var reste = li.x2 - li.x1 - li.utilise, nb = li.jetons.length;
+      var derniere = idx === meilleur.lignes.length - 1;
+      var ajout = (nb > 1 && !derniere && reste / (nb - 1) < f * 0.9) ? reste / (nb - 1) : 0;
+      var x = (ajout || nb === 1 || derniere) ? li.x1 + (ajout ? 0 : reste / 2) : li.x1;
+      li.jetons.forEach(function (j) {
+        var s = document.createElement("span");
+        s.className = "mot c" + (j.p % 4) + (j.sep ? " sep" : "") + (/^[A-ZÀ-Ý]/.test(j.t) ? " nom" : "");
+        s.textContent = j.t;
+        s.dataset.p = j.p;
+        s.style.left = x.toFixed(1) + "px";
+        s.style.top = (li.y - f * 0.62).toFixed(1) + "px";
+        s.style.fontSize = f.toFixed(2) + "px";
+        if (introFinie || phrasesVues[j.p]) s.classList.add("vu");
+        zoneMots.appendChild(s);
+        x += j.w + meilleur.espace + ajout;
+      });
+    });
+  }
+
+  function reveler(p) {
+    phrasesVues[p] = true;
+    zoneMots.querySelectorAll('[data-p="' + p + '"]').forEach(function (s, i) {
+      s.style.transitionDelay = (i * 0.045).toFixed(3) + "s";
+      s.classList.add("vu", "eclaire");
+      setTimeout(function () { s.classList.remove("eclaire"); }, 900 + i * 45);
+    });
+  }
+  function finirIntro(vite) {
+    if (introFinie) return;
+    introFinie = true;
+    minuteurs.forEach(clearTimeout);
+    if (vite) zoneMots.querySelectorAll(".mot").forEach(function (s) { s.style.transitionDelay = "0s"; s.classList.add("vu"); });
+    $("contour-trace").style.strokeDashoffset = 0;
+    boiteCoeur.classList.add("complet");
+    $("intro-toucher").hidden = true;
+    setTimeout(function () {
+      centre.classList.add("vu");
+      var c = centreDe(centre);
+      eclat(c.x, c.y, 30, 200);
+    }, vite ? 150 : 500);
+    setTimeout(function () {
+      boiteCoeur.classList.add("bat");
+      $("intro-suivant").hidden = false;
+    }, vite ? 1100 : 1900);
+  }
+  function lancerIntro() {
+    disposerCoeur();
+    if (reduit || !PHRASES.length) return finirIntro(true);
+    boiteCoeur.classList.add("trace");
+    var t = 1300, pas = 640;
+    PHRASES.forEach(function (_, i) {
+      minuteurs.push(setTimeout(function () { reveler(i); }, t));
+      t += pas;
+      pas = Math.max(230, pas * 0.92);
+    });
+    minuteurs.push(setTimeout(function () { finirIntro(false); }, t + 500));
+    minuteurs.push(setTimeout(function () { if (!introFinie) $("intro-toucher").classList.add("visible"); }, 2600));
+  }
+  $("e-intro").addEventListener("click", function (e) {
+    if (!introFinie && !e.target.closest("button")) finirIntro(true);
+  });
+  var attenteRedim;
+  window.addEventListener("resize", function () {
+    if (!$("e-intro").classList.contains("actif")) return;
+    clearTimeout(attenteRedim);
+    attenteRedim = setTimeout(disposerCoeur, 200);
+  });
+
   /* ---------- 1. Le code ---------- */
   var CODE = String(C.code || "").replace(/\D/g, "");
   var LONGUEUR = Math.min(Math.max(CODE.length, 4), 6);
@@ -337,4 +524,9 @@
       setTimeout(f.remove.bind(f), 5500);
     }
   }
+  /* ---------- Démarrage : on attend les polices pour bien mesurer les mots ---------- */
+  var polices = (document.fonts && document.fonts.load)
+    ? Promise.all([document.fonts.load("700 16px Nunito"), document.fonts.load("700 40px 'Dancing Script'")])
+    : Promise.resolve();
+  Promise.race([polices, new Promise(function (r) { setTimeout(r, 1800); })]).then(lancerIntro, lancerIntro);
 })();

@@ -77,6 +77,56 @@ h2:focus { outline: none; }
 .suivant { margin-top: 26px; animation: apparaitre .6s .3s ease both; }
 @keyframes apparaitre { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
+/* ---------- 0. Intro : les mots en forme de cœur ---------- */
+.lecteur-seul { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.coeur-mots { position: relative; margin: 0 auto; transform-origin: 50% 46%; }
+.coeur-mots.bat { animation: battreCoeur 2.6s ease-in-out infinite; }
+@keyframes battreCoeur { 0%, 42%, 100% { transform: scale(1); } 8% { transform: scale(1.035); } 16% { transform: scale(.995); } 25% { transform: scale(1.025); } }
+.contour { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.contour path {
+  fill: rgba(255, 92, 138, 0); stroke: var(--rose); stroke-width: 1.6; stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(255, 92, 138, .85));
+  transition: stroke-dashoffset 1.8s cubic-bezier(.6, 0, .2, 1), opacity 1.4s ease, fill 1.4s ease;
+}
+.coeur-mots.trace .contour path { stroke-dashoffset: 0 !important; }
+.coeur-mots.complet .contour path { opacity: .55; fill: rgba(255, 92, 138, .07); }
+.mots { position: absolute; inset: 0; }
+.mot {
+  position: absolute; white-space: nowrap; margin: 0;
+  font-family: "Nunito", system-ui, sans-serif; font-weight: 700; line-height: 1.24;
+  opacity: 0; transform: translateY(8px) scale(.85); filter: blur(4px);
+  transition: opacity .7s ease, transform .8s cubic-bezier(.2, .9, .2, 1.2), filter .7s ease, color 1s ease, text-shadow 1s ease;
+}
+.mot.vu { opacity: 1; transform: none; filter: none; }
+.mot.c0 { color: var(--rose-clair); }
+.mot.c1 { color: #f6c86a; }
+.mot.c2 { color: #fff1f6; }
+.mot.c3 { color: #ff86a8; }
+.mot.sep { color: var(--rose); }
+.mot.nom { color: #ffd98a; text-shadow: 0 0 10px rgba(244, 195, 79, .7); }
+.mot.eclaire { color: #fff; text-shadow: 0 0 8px #fff, 0 0 18px var(--rose); }
+.centre {
+  position: absolute; left: 50%; top: 43%; margin: 0; line-height: 1; white-space: nowrap;
+  color: #fff; letter-spacing: .3em; opacity: 0; filter: blur(10px);
+  transform: translate(-50%, -50%) scale(.55);
+  transition: opacity 1.2s ease, filter 1.2s ease, transform 1.6s cubic-bezier(.2, 1.35, .4, 1), letter-spacing 1.8s cubic-bezier(.2, .8, .2, 1);
+}
+.centre.vu {
+  opacity: 1; filter: none; letter-spacing: .02em; transform: translate(-50%, -50%) scale(1);
+  animation: lueurCentre 2.6s 1.2s ease-in-out infinite;
+  text-shadow: 0 0 14px rgba(255, 92, 138, .95), 0 0 34px rgba(244, 195, 79, .55);
+}
+@keyframes lueurCentre {
+  50% { text-shadow: 0 0 22px rgba(255, 92, 138, 1), 0 0 56px rgba(244, 195, 79, .8), 0 0 90px rgba(255, 92, 138, .45); }
+}
+.toucher {
+  position: absolute; left: 0; right: 0; bottom: calc(26px + env(safe-area-inset-bottom));
+  margin: 0; font-size: .85rem; color: var(--doux); opacity: 0; transition: opacity 1s ease;
+}
+.toucher.visible { opacity: .75; animation: respirer 2.4s ease-in-out infinite; }
+@keyframes respirer { 50% { opacity: .35; } }
+#intro-suivant { margin-top: 30px; }
+
 /* ---------- 1. Cadenas ---------- */
 .verrou.ouvert { transition: opacity .6s ease, transform .6s ease; opacity: 0; transform: scale(1.08); pointer-events: none; }
 .cadenas { width: 96px; height: 96px; margin-bottom: 8px; filter: drop-shadow(0 10px 30px rgba(255, 92, 138, .45)); }
