@@ -71,7 +71,8 @@ window.CADEAU = {
   // 5. La demande
   question: "Veux-tu m'épouser ?",
   oui: "Oui 💍",
-  non: "Non",
+  // Le texte du bouton « Non » change à chaque appui (un texte par appui)
+  non: ["Non", "Tu es sûre ?", "Vraiment ?", "Réfléchis bien…", "Dernière chance !"],
   essaisNon: 5,      // à chaque « Non », le bouton fuit et rapetisse, « Oui » grossit ; au 5e, « Non » disparaît
   apresOui: "Tu viens de faire de moi l'homme le plus heureux du monde.",
 

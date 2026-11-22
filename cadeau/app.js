@@ -488,7 +488,9 @@
   var boutonNon = document.createElement("button");
   boutonNon.type = "button";
   boutonNon.className = "btn btn-non";
-  boutonNon.textContent = C.non || "Non";
+  var TEXTES_NON = [].concat(C.non || "Non").filter(Boolean);
+  if (!TEXTES_NON.length) TEXTES_NON = ["Non"];
+  boutonNon.textContent = TEXTES_NON[0];
   boutonNon.addEventListener("click", direNon);
   reponses.appendChild(boutonOui);
   reponses.appendChild(boutonNon);
@@ -521,7 +523,8 @@
       boutonOui.focus({ preventScroll: true });
       return;
     }
-    var echelleNon = 1 - 0.17 * nbNon;
+    boutonNon.textContent = TEXTES_NON[Math.min(nbNon, TEXTES_NON.length - 1)];
+    var echelleNon = 1 - 0.12 * nbNon;
     boutonNon.style.setProperty("--k", echelleNon.toFixed(3));
     // taille réelle (sans l'échelle) et taille visible une fois rapetissé
     var W0 = boutonNon.offsetWidth, H0 = boutonNon.offsetHeight;
@@ -530,13 +533,21 @@
     var ro = boutonOui.getBoundingClientRect();
     var ox = ro.left + ro.width / 2, oy = ro.top + ro.height / 2;
     var ow = boutonOui.offsetWidth * echelleOui / 2 + 30, oh = boutonOui.offsetHeight * echelleOui / 2 + 40;
+    // zones interdites : « Oui » grossi, la question et « Mon amour » au-dessus (qui remontent un peu quand « Oui » grossit)
+    var interdits = [{ x1: ox - ow, x2: ox + ow, y1: oy - oh, y2: oy + oh }];
+    ["question", "demande-pour"].forEach(function (id) {
+      var el = $(id);
+      if (!el || el.hidden) return;
+      var q = el.getBoundingClientRect();
+      if (q.width) interdits.push({ x1: q.left - 10, x2: q.right + 10, y1: q.top - 50, y2: q.bottom + 10 });
+    });
     var Wv = window.innerWidth, Hv = window.innerHeight, marge = 16;
     var choix = null, meilleurScore = -1;
-    for (var essai = 0; essai < 60; essai++) {
+    for (var essai = 0; essai < 80; essai++) {
       var x = marge + Math.random() * Math.max(1, Wv - w - 2 * marge);
       var y = 72 + Math.random() * Math.max(1, Hv - h - 72 - marge);
-      var surOui = x < ox + ow && x + w > ox - ow && y < oy + oh && y + h > oy - oh;
-      if (surOui) continue;
+      var gene = interdits.some(function (z) { return x < z.x2 && x + w > z.x1 && y < z.y2 && y + h > z.y1; });
+      if (gene) continue;
       var score = Math.hypot(x - r.left, y - r.top);
       if (score > meilleurScore) { meilleurScore = score; choix = { x: x, y: y }; }
       if (score > Math.min(Wv, Hv) * 0.45) break;

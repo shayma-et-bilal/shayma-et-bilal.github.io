@@ -8,7 +8,7 @@ Page pour téléphone, à ouvrir avec le QR code. Adresse : https://shayma-et-bi
 2. **Photos** : vos photos façon polaroid, à faire glisser.
 3. **Lettre** : une enveloppe à toucher, qui s'ouvre sur ta lettre.
 4. **Cadeau en 3D** : une boîte à toucher plusieurs fois. À chaque appui, elle s'écrase et rebondit, le couvercle saute et une lumière filtre de l'intérieur. Au dernier appui, la boîte se tasse, le couvercle s'envole, une onde de choc part, un faisceau de lumière jaillit avec des étincelles et des cœurs.
-5. **Bague en 3D** : la bague (or et diamant) sort de la boîte en tournant. La caméra la suit vers le haut pendant que la boîte quitte l'image. Un éclat traverse le diamant, puis « Veux-tu m'épouser ? » apparaît avec **Oui** et **Non**. À chaque « Non », le bouton saute ailleurs sur l'écran et rapetisse, pendant que « Oui » grossit et se met à pulser. Au 5e « Non », le bouton disparaît (réglable avec `essaisNon` dans `contenu.js`). Au « Oui », la bague fait deux tours et lance cœurs, étincelles et confettis.
+5. **Bague en 3D** : la bague (or et diamant) sort de la boîte en tournant. La caméra la suit vers le haut pendant que la boîte quitte l'image. Un éclat traverse le diamant, puis « Veux-tu m'épouser ? » apparaît avec **Oui** et **Non**. À chaque « Non », le bouton saute ailleurs sur l'écran (jamais sur la question ni sur « Oui »), rapetisse et change de texte (« Tu es sûre ? », « Vraiment ? », « Réfléchis bien… », « Dernière chance ! »), pendant que « Oui » grossit et se met à pulser. Au 5e « Non », le bouton disparaît (réglable avec `essaisNon` dans `contenu.js`). Au « Oui », la bague fait deux tours et lance cœurs, étincelles et confettis.
 
 Sans WebGL (très vieux téléphone), la page affiche automatiquement la version 2D du cadeau.
 
