@@ -6,8 +6,13 @@ Page pour téléphone, à ouvrir avec le QR code. Adresse : https://shayma-et-bi
 1. **Code secret** : cadenas en forme de cœur avec un clavier à chiffres.
 2. **Photos** : vos photos façon polaroid, à faire glisser.
 3. **Lettre** : une enveloppe à toucher, qui s'ouvre sur ta lettre.
-4. **Cadeau** : une boîte à toucher plusieurs fois. Elle bouge de plus en plus fort, puis le couvercle s'envole.
-5. **Bague** : la bague apparaît avec « Veux-tu m'épouser ? ». Un appui sur « Oui » lance les confettis et ton message.
+4. **Cadeau en 3D** : une boîte à toucher plusieurs fois. À chaque appui, elle s'écrase et rebondit, le couvercle saute et une lumière filtre de l'intérieur. Au dernier appui, la boîte se tasse, le couvercle s'envole, une onde de choc part, un faisceau de lumière jaillit avec des étincelles et des cœurs.
+5. **Bague en 3D** : la bague (or et diamant) sort de la boîte en tournant. La caméra la suit vers le haut pendant que la boîte quitte l'image. Un éclat traverse le diamant, puis « Veux-tu m'épouser ? » apparaît. Au « Oui », la bague fait deux tours et lance cœurs, étincelles et confettis.
+
+Sans WebGL (très vieux téléphone), la page affiche automatiquement la version 2D du cadeau.
+
+## Scène 3D (pour modifier l'animation)
+Le code source est dans `src/cadeau3d.js` (Three.js et GSAP). Après une modification, recompile depuis la racine du dépôt avec `npm install` puis `npm run build:cadeau`. Ça génère `dist/cadeau3d.js`.
 
 Chaque action a son bruitage : touches, erreur, ouverture, papier, coups sur la boîte, magie, cloche de la bague, fanfare du oui. Les sons sont fabriqués par le navigateur, il n'y a aucun fichier audio. Le bouton 🔊 en haut à droite coupe le son.
 

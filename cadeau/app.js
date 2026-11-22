@@ -43,6 +43,7 @@
       window.scrollTo(0, 0);
       var titre = suivant.querySelector("h2");
       if (titre) titre.focus({ preventScroll: true });
+      if (id === "e-cadeau") preparerCadeau();
     }, actuel ? 420 : 0);
   }
   document.querySelectorAll(".suivant").forEach(function (b) {
@@ -126,6 +127,7 @@
     bloque = true;
     if (saisie === CODE) {
       texte("message", "C'est ouvert ❤");
+      precharger3D();
       setTimeout(S.ouvert, 120);
       vibrer([30, 40, 60]);
       $("e-code").classList.add("ouvert");
@@ -204,6 +206,25 @@
     eclat(c.x, c.y, 18, 160);
   });
 
+  /* ---------- Scène 3D (chargée en arrière-plan ; sinon, version 2D) ---------- */
+  var scene3d = null, chargement3d = null;
+  var reduit = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function precharger3D() {
+    if (!chargement3d) chargement3d = import("./dist/cadeau3d.js").catch(function () { return null; });
+    return chargement3d;
+  }
+  function preparerCadeau() {
+    var delai = new Promise(function (r) { setTimeout(function () { r(null); }, 4000); });
+    Promise.race([precharger3D(), delai]).then(function (mod) {
+      if (!mod || scene3d || faits > 0 || !mod.webglOK()) return;
+      try {
+        scene3d = mod.creerScene3D($("scene3d"), { reduit: reduit });
+        $("e-cadeau").classList.add("mode-3d");
+        requestAnimationFrame(function () { $("scene3d").classList.add("pret"); });
+      } catch (e) { scene3d = null; }
+    });
+  }
+
   /* ---------- 4. Le cadeau ---------- */
   var APPUIS = Math.max(1, parseInt(C.appuis, 10) || 5);
   var faits = 0, ouvert = false;
@@ -217,6 +238,13 @@
     var reste = APPUIS - faits;
     S.appui(faits);
     vibrer(25 + faits * 12);
+    jauge.style.width = Math.round((faits / APPUIS) * 100) + "%";
+    if (scene3d) {
+      scene3d.appuyer(faits, APPUIS);
+      if (reste <= 0) return ouvrirCadeau();
+      consigne.textContent = reste === 1 ? "Encore une fois !" : relances[(faits - 1) % relances.length];
+      return;
+    }
     boite.style.setProperty("--force", String(1 + faits * 0.45));
     boite.classList.remove("tape");
     void boite.getBoundingClientRect(); // relance l'animation
@@ -236,6 +264,15 @@
     consigne.textContent = "";
     S.magie();
     vibrer([40, 50, 80]);
+    if (scene3d) {
+      $("avant").classList.add("efface");
+      scene3d.ouvrir({ onBague: S.bague }).then(function () {
+        $("avant").hidden = true;
+        $("demande").hidden = false;
+        $("question").focus({ preventScroll: true });
+      });
+      return;
+    }
     boite.classList.remove("tape");
     boite.classList.add("ouverte");
     var c = centreDe(boite);
@@ -273,9 +310,12 @@
   function direOui() {
     S.oui();
     vibrer([60, 60, 60, 60, 200]);
-    reponses.hidden = true;
-    $("apres-oui").hidden = false;
+    if (scene3d) scene3d.celebrer();
     var b = centreDe($("question"));
+    reponses.hidden = true;
+    $("question").hidden = true;
+    $("demande-pour").hidden = true;
+    $("apres-oui").hidden = false;
     eclat(b.x, b.y, 50, 340);
     confettis(160);
     setTimeout(function () { confettis(90); eclat(window.innerWidth / 2, window.innerHeight * 0.4, 30, 300); }, 1400);
