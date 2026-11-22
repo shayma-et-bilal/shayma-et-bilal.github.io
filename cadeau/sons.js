@@ -16,7 +16,7 @@ window.Sons = (function () {
       try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) { /* non pris en charge */ }
       ctx = new AC();
     }
-    if (ctx.state === "suspended") ctx.resume();
+    if (ctx.state !== "running" && ctx.resume) ctx.resume();
     return ctx;
   }
 

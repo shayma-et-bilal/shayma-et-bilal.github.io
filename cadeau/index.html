@@ -9,13 +9,18 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💌</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="sky" aria-hidden="true"></div>
 
-<button type="button" class="son" id="son" aria-pressed="true" aria-label="Couper le son">🔊</button>
+<button type="button" class="son" id="son" aria-pressed="true" aria-label="Couper le son"></button>
+
+<!-- Téléphone tenu à l'horizontale : on invite à le tourner -->
+<div class="tourner" role="alert">
+  <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="15" y="6" width="18" height="32" rx="3.5"/><path d="M21.5 33h5"/><path d="M39 22a14 14 0 0 1-9 16.5M39 22l-3.2 2.4M39 22l1.6 3.6"/></svg>
+  <p>Tourne ton téléphone<br>pour découvrir la surprise</p>
+</div>
 
 <!-- 0. Les mots en forme de cœur (premier écran) -->
 <section id="e-intro" class="ecran ecran-intro actif" aria-labelledby="intro-centre">
@@ -23,10 +28,11 @@
     <svg class="contour" id="contour" aria-hidden="true"><path id="contour-trace"/></svg>
     <div class="mots" id="mots" aria-hidden="true"></div>
     <p class="centre script" id="intro-centre"></p>
+    <span class="pointe" id="pointe" aria-hidden="true"></span>
   </div>
   <p class="lecteur-seul" id="intro-texte"></p>
   <p class="toucher" id="intro-toucher" aria-hidden="true">Touche pour tout voir</p>
-  <button type="button" class="btn suivant" id="intro-suivant" data-vers="e-code" hidden></button>
+  <button type="button" class="btn suivant cache" id="intro-suivant" data-vers="e-code" aria-hidden="true" tabindex="-1"></button>
 </section>
 
 <!-- 1. Le code -->
@@ -42,8 +48,9 @@
   <h1 id="verrou-titre">Un secret t'attend</h1>
   <p class="pour" id="verrou-pour"></p>
   <p class="indice" id="indice"></p>
-  <div class="points" id="points" aria-live="polite"></div>
+  <div class="points" id="points" aria-hidden="true"></div>
   <p class="message" id="message" role="status"></p>
+  <p class="lecteur-seul" id="annonce-code" aria-live="polite"></p>
   <div class="clavier" id="clavier"></div>
 </section>
 
@@ -53,24 +60,27 @@
   <h2 class="script" id="t-photos" tabindex="-1"></h2>
   <div class="galerie" id="galerie" tabindex="0" aria-label="Photos, fais glisser pour voir la suite"></div>
   <div class="reperes" id="reperes" aria-hidden="true"></div>
-  <button type="button" class="btn suivant" data-vers="e-lettre">Continuer <span aria-hidden="true">→</span></button>
+  <button type="button" class="btn suivant" data-vers="e-lettre">Continuer</button>
 </section>
 
 <!-- 3. La lettre -->
 <section id="e-lettre" class="ecran" aria-labelledby="t-lettre" hidden>
   <h2 class="script" id="t-lettre" tabindex="-1">Une lettre pour toi</h2>
-  <button type="button" class="enveloppe" id="enveloppe" aria-expanded="false" aria-controls="lettre">
+  <button type="button" class="enveloppe" id="enveloppe" aria-expanded="false" aria-controls="lettre" aria-label="Ouvrir la lettre">
+    <span class="env-fond" aria-hidden="true"></span>
+    <span class="env-carte" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="env-poche" aria-hidden="true"></span>
     <span class="rabat" aria-hidden="true"></span>
-    <span class="sceau" aria-hidden="true">❤</span>
-    <span class="ouvrir">Touche pour ouvrir</span>
+    <span class="sceau" aria-hidden="true"><i class="ico-coeur"></i></span>
   </button>
+  <p class="ouvrir" id="ouvrir-lettre" aria-hidden="true">Touche l'enveloppe pour l'ouvrir</p>
   <article class="lettre" id="lettre" hidden>
     <p class="lettre-pour" id="lettre-pour"></p>
     <div id="lettre-texte"></div>
     <p class="signature script" id="signature"></p>
     <p class="de" id="de"></p>
   </article>
-  <button type="button" class="btn suivant" id="apres-lettre" data-vers="e-cadeau" hidden>Continuer <span aria-hidden="true">→</span></button>
+  <button type="button" class="btn suivant" id="apres-lettre" data-vers="e-cadeau" hidden>Continuer</button>
 </section>
 
 <!-- 4. Le cadeau, puis la demande -->
@@ -103,7 +113,7 @@
         </g>
       </svg>
     </button>
-    <div class="jauge" aria-hidden="true"><i id="jauge"></i></div>
+    <div class="jauge" id="jauge" aria-hidden="true"></div>
   </div>
 
   <div id="demande" class="demande" hidden>
@@ -135,8 +145,9 @@
     <h2 class="script question" id="question" tabindex="-1"></h2>
     <div class="reponses" id="reponses"></div>
     <div class="apres-oui" id="apres-oui" hidden>
-      <p class="script grand">Tu as dit oui ❤</p>
+      <p class="script grand">Tu as dit oui <i class="ico-coeur" aria-hidden="true"></i></p>
       <p id="apres-oui-texte"></p>
+      <p class="signature-fin" id="signature-fin" hidden><span class="noms" id="fin-noms"></span><span class="filet" aria-hidden="true"></span><span class="date" id="fin-date"></span></p>
       <a class="btn" id="whatsapp" target="_blank" rel="noopener" hidden>Envoyer ma réponse sur WhatsApp</a>
     </div>
   </div>

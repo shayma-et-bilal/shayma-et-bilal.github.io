@@ -24,7 +24,7 @@ const BAGUE_Y = 3.2;
 const ROT_BOITE = -0.55;
 
 export function webglOK() {
-  try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); }
+  try { const c = document.createElement('canvas'); return !!c.getContext('webgl2'); }
   catch (e) { return false; }
 }
 
@@ -201,10 +201,13 @@ function creerFaisceau() {
 /* ---------- La boîte cadeau ---------- */
 function creerBoite() {
   const matBoite = new THREE.MeshPhysicalMaterial({
-    color: '#e81e63', roughness: 0.36, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.18,
-    sheen: 0.2, sheenColor: new THREE.Color('#ff9fc0'), sheenRoughness: 0.5, envMapIntensity: 0.45
+    color: '#8c1240', roughness: 0.5, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.3,
+    sheen: 0.6, sheenColor: new THREE.Color('#ff7aa5'), sheenRoughness: 0.45, envMapIntensity: 0.6
   });
-  const matRuban = new THREE.MeshPhysicalMaterial({ color: '#f5c451', roughness: 0.24, metalness: 0.85, clearcoat: 0.5, clearcoatRoughness: 0.15 });
+  const matRuban = new THREE.MeshPhysicalMaterial({
+    color: '#e3a83f', roughness: 0.36, metalness: 0.35, sheen: 1, sheenColor: new THREE.Color('#fff1c4'), sheenRoughness: 0.35,
+    clearcoat: 0.2, clearcoatRoughness: 0.4
+  });
 
   const racine = new THREE.Group();   // saut + rotation lente
   const tilt = new THREE.Group();     // bascule pendant les secousses
@@ -238,10 +241,10 @@ function creerBoite() {
 
   const noeud = new THREE.Group();
   noeud.position.y = LH / 2;
-  const boucleGeo = new THREE.TorusGeometry(0.27, 0.075, 18, 56);
+  const boucleGeo = new THREE.TorusGeometry(0.27, 0.06, 18, 56);
   [-1, 1].forEach((cote) => {
     const b = new THREE.Mesh(boucleGeo, matRuban);
-    b.scale.set(1, 0.6, 1.25);
+    b.scale.set(1, 0.6, 0.42); // boucle aplatie : un ruban, pas un anneau
     b.position.set(cote * 0.27, 0.17, 0);
     b.rotation.set(0, cote * 0.5, cote * -0.42);
     noeud.add(b);
@@ -264,8 +267,8 @@ function creerBoite() {
 function creerBague(texE, texL) {
   const matOr = new THREE.MeshPhysicalMaterial({ color: '#f1c66a', metalness: 1, roughness: 0.14, clearcoat: 0.6, clearcoatRoughness: 0.08, envMapIntensity: 1.5 });
   const matDiamant = new THREE.MeshPhysicalMaterial({
-    color: '#ffffff', metalness: 1, roughness: 0, iridescence: 0.3, iridescenceIOR: 1.6,
-    envMapIntensity: 4.2, flatShading: true, clearcoat: 1, clearcoatRoughness: 0
+    color: '#f2f9ff', metalness: 1, roughness: 0, iridescence: 0.35, iridescenceIOR: 1.8,
+    envMapIntensity: 5, flatShading: true, clearcoat: 1, clearcoatRoughness: 0
   });
 
   const bague = new THREE.Group();      // position / échelle
@@ -316,6 +319,9 @@ function creerBague(texE, texL) {
   const feu = new THREE.PointLight('#ffffff', 4, 2.2, 2);
   feu.position.set(0.35, yG + 0.35, 0.7);
   balance.add(feu);
+  const feu2 = new THREE.PointLight('#e8f4ff', 3, 1.8, 2); // éclaire les facettes du bas (sinon grises)
+  feu2.position.set(-0.3, yG - 0.35, 0.6);
+  balance.add(feu2);
 
   bague.visible = false;
   return { bague, tour, balance, halo, eclat, yDiamant: yG };
@@ -339,6 +345,13 @@ export function creerScene3D(hote, { reduit = false } = {}) {
   pmrem.dispose();
 
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); renderer.setAnimationLoop(null); });
+  canvas.addEventListener('webglcontextrestored', () => {
+    const pm = new THREE.PMREMGenerator(renderer);
+    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    pm.dispose();
+    renderer.setAnimationLoop(boucle);
+  });
 
   // Lumières
   scene.add(new THREE.HemisphereLight('#ffd9e6', '#2a0f2e', 0.35));
@@ -397,7 +410,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
   /* ---------- Caméra : cadrages ---------- */
   const cam = { px: 0, py: 3, pz: 10, tx: 0, ty: 1, tz: 0, recul: 1 };
   const secousse = { amp: 0 };
-  let mode = 'boite';
+  let mode = 'boite', recadrer = false;
   function cadrage(m) {
     const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), a = camera.aspect;
     let w, h, remplissage, cy, decal, elev;
@@ -423,7 +436,8 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     camera.updateProjectionMatrix();
     const echelle = renderer.getPixelRatio() * h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
     [etincelles, coeurs, poussiere].forEach((p) => { p.mat.uniforms.uScale.value = echelle; });
-    if (!gsap.isTweening(cam)) Object.assign(cam, cadrage(mode));
+    if (mode === 'ouverture') recadrer = true;
+    else { gsap.killTweensOf(cam, 'px,py,pz,tx,ty,tz'); Object.assign(cam, cadrage(mode)); }
   }
   const ro = new ResizeObserver(redimensionner);
   ro.observe(hote);
@@ -551,8 +565,9 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     gsap.set(B.tilt.rotation, { x: 0, z: 0 });
     const fin = cadrage('bague');
     return new Promise((resoudre) => {
-      const T = 0.5;          // moment de l'explosion
-      const S = T + 0.18;     // départ de la bague
+      gsap.globalTimeline.timeScale(reduit ? 1.8 : 1);
+      const T = 0.55;         // moment de l'explosion
+      const S = T + 0.7;      // départ de la bague (0,7 s de lumière seule avant)
       gsap.timeline()
         // 1. Anticipation : la boîte se tasse, la lumière monte
         .to(sq, { x: 1.17, y: 0.74, z: 1.17, duration: T, ease: 'power2.in' }, 0)
@@ -590,25 +605,29 @@ export function creerScene3D(hote, { reduit = false } = {}) {
         .to(lumInt, { intensity: 16, duration: 1.6 }, T + 0.3)
         // 3. La bague sort en tournant, la caméra la suit
         .add(() => { BG.bague.visible = true; traine = true; }, S)
-        .fromTo(BG.bague.position, { y: 0.55 }, { y: BAGUE_Y, duration: 2.7, ease: 'power3.out' }, S)
-        .fromTo(BG.bague.scale, { x: 0.6, y: 0.6, z: 0.6 }, { x: 1, y: 1, z: 1, duration: 2.2, ease: 'power2.out' }, S)
-        .fromTo(BG.tour.rotation, { y: -TAU * 2.25, x: 0.55 }, { y: 0, x: 0.06, duration: 3.1, ease: 'expo.out' }, S)
-        .to(BG.halo.material, { opacity: 0.55, duration: 1.6 }, S + 0.9)
-        .to(cam, { ...fin, recul: 1, duration: 2.9, ease: 'power2.inOut' }, S + 0.05)
-        .add(() => { traine = false; }, S + 1.9)
-        .to(B.racine.position, { y: -2.6, duration: 2.2, ease: 'power2.inOut' }, S + 0.7)
-        .to(B.racine.scale, { x: 0.9, y: 0.9, z: 0.9, duration: 2.2, ease: 'power2.inOut' }, S + 0.7)
-        .to(ombre.material, { opacity: 0, duration: 0.8 }, S + 0.5)
-        .to(lumInt.position, { y: BAGUE_Y - 0.7, duration: 2.4, ease: 'power2.inOut' }, S + 0.6)
-        // 4. L'éclat du diamant, puis la question
-        .add(() => { scintiller(); if (onBague) onBague(); }, S + 2.3)
-        .add(() => { mode = 'bague'; tEclat = 2.4; resoudre(); }, S + 2.7);
+        .fromTo(BG.bague.position, { y: 0.55 }, { y: BAGUE_Y, duration: 3.4, ease: 'power2.inOut' }, S)
+        .fromTo(BG.bague.scale, { x: 0.6, y: 0.6, z: 0.6 }, { x: 1, y: 1, z: 1, duration: 3, ease: 'power2.out' }, S)
+        .fromTo(BG.tour.rotation, { y: reduit ? -0.4 : -TAU * 1.25, x: reduit ? 0.1 : 0.55 }, { y: 0, x: 0.06, duration: 3.6, ease: 'power3.out' }, S)
+        .to(BG.halo.material, { opacity: 0.55, duration: 1.8 }, S + 1.4)
+        .to(cam, { ...fin, recul: 1, duration: 3.6, ease: 'power2.inOut' }, S + 0.2)
+        .add(() => { traine = false; }, S + 2.6)
+        .to(B.racine.position, { y: -2.6, duration: 2.6, ease: 'power2.inOut' }, S + 1)
+        .to(B.racine.scale, { x: 0.9, y: 0.9, z: 0.9, duration: 2.6, ease: 'power2.inOut' }, S + 1)
+        .to(ombre.material, { opacity: 0, duration: 0.8 }, S + 0.8)
+        .to(lumInt.position, { y: BAGUE_Y - 0.7, duration: 3, ease: 'power2.inOut' }, S + 0.6)
+        // 4. L'éclat du diamant, un temps avec la bague seule, puis la question
+        .add(() => { scintiller(); if (onBague) onBague(); }, S + 3.5)
+        .add(() => {
+          mode = 'bague'; tEclat = 2.4;
+          if (recadrer) { recadrer = false; gsap.to(cam, { ...cadrage('bague'), duration: 0.6, ease: 'power2.out' }); }
+          resoudre();
+        }, S + 4.4);
     });
   }
 
   /* ---------- Après le oui ---------- */
   function celebrer() {
-    gsap.to(BG.tour.rotation, { y: '+=' + TAU * 2, duration: 2, ease: 'power3.inOut' });
+    if (!reduit) gsap.to(BG.tour.rotation, { y: '+=' + TAU * 2, duration: 2, ease: 'power3.inOut' });
     gsap.fromTo(BG.bague.scale, { x: 1, y: 1, z: 1 }, { x: 1.12, y: 1.12, z: 1.12, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.out' });
     gsap.fromTo(BG.halo.material, { opacity: 1.2 }, { opacity: 0.55, duration: 1.6 });
     const c = new THREE.Vector3(); BG.bague.getWorldPosition(c);
@@ -618,6 +637,21 @@ export function creerScene3D(hote, { reduit = false } = {}) {
       taille: [0.05, 0.14], vie: [0.8, 1.8], gravite: 1, frein: 1.2 });
     secouer(0.05, 0.5);
     scintiller();
+    if (!reduit) gsap.to(cam, { recul: 0.93, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 4 });
+  }
+
+  // Zone de la bague à l'écran (en pixels), pour que le bouton « Non » ne vienne pas la cacher
+  function zoneBague(marge = 24) {
+    const boite = new THREE.Box3().setFromObject(BG.balance);
+    const r = canvas.getBoundingClientRect();
+    let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+    const v = new THREE.Vector3();
+    for (let i = 0; i < 8; i++) {
+      v.set(i & 1 ? boite.max.x : boite.min.x, i & 2 ? boite.max.y : boite.min.y, i & 4 ? boite.max.z : boite.min.z).project(camera);
+      const x = r.left + (v.x + 1) / 2 * r.width, y = r.top + (1 - v.y) / 2 * r.height;
+      x1 = Math.min(x1, x); x2 = Math.max(x2, x); y1 = Math.min(y1, y); y2 = Math.max(y2, y);
+    }
+    return { x1: x1 - marge, y1: y1 - marge, x2: x2 + marge, y2: y2 + marge };
   }
 
   function detruire() {
@@ -628,5 +662,5 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     canvas.remove();
   }
 
-  return { appuyer, ouvrir, celebrer, detruire };
+  return { appuyer, ouvrir, celebrer, detruire, zoneBague };
 }

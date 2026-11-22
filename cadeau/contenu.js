@@ -70,11 +70,14 @@ window.CADEAU = {
 
   // 5. La demande
   question: "Veux-tu m'épouser ?",
-  oui: "Oui 💍",
+  oui: "Oui",
   // Le texte du bouton « Non » change à chaque appui (un texte par appui)
   non: ["Non", "Tu es sûre ?", "Vraiment ?", "Réfléchis bien…", "Dernière chance !"],
   essaisNon: 5,      // à chaque « Non », le bouton fuit et rapetisse, « Oui » grossit ; au 5e, « Non » disparaît
   apresOui: "Tu viens de faire de moi l'homme le plus heureux du monde.",
+  // La signature tout à la fin (laisse "" pour ne pas l'afficher)
+  finNoms: "Shayma & Bilal",
+  finDate: "",       // exemple : "14 février 2027"
 
   // Optionnel : ton numéro WhatsApp pour qu'elle t'envoie sa réponse.
   // Format international sans + ni espaces, ex. "33612345678". "" = pas de bouton.
