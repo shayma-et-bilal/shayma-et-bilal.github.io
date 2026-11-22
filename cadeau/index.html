@@ -145,8 +145,15 @@
     <h2 class="script question" id="question" tabindex="-1"></h2>
     <div class="reponses" id="reponses"></div>
     <div class="apres-oui" id="apres-oui" hidden>
-      <p class="script grand">Tu as dit oui <i class="ico-coeur" aria-hidden="true"></i></p>
-      <p id="apres-oui-texte"></p>
+      <div class="moment-oui" id="moment-oui">
+        <p class="script grand">Tu as dit oui <i class="ico-coeur" aria-hidden="true"></i></p>
+        <p id="apres-oui-texte"></p>
+      </div>
+      <figure class="verset" id="verset" hidden>
+        <p class="verset-ar" id="verset-ar" lang="ar" dir="rtl"></p>
+        <p class="verset-fr" id="verset-fr"></p>
+        <figcaption class="verset-ref" id="verset-ref"></figcaption>
+      </figure>
       <p class="signature-fin" id="signature-fin" hidden><span class="noms" id="fin-noms"></span><span class="filet" aria-hidden="true"></span><span class="date" id="fin-date"></span></p>
       <a class="btn" id="whatsapp" target="_blank" rel="noopener" hidden>Envoyer ma réponse sur WhatsApp</a>
     </div>

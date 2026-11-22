@@ -405,6 +405,27 @@ body.fin .son { opacity: .35; }
   90% { opacity: 1; }
   100% { transform: translate(calc(var(--dx) * 1.7), 110vh) rotate(var(--r)); opacity: .9; }
 }
+/* Fin en deux temps : le message, puis le verset */
+.moment-oui.part { animation: partir .7s cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes partir { to { opacity: 0; transform: translateY(-12px); filter: blur(6px); } }
+.verset { margin: 0 0 4px; }
+.apres-oui .verset-ar {
+  margin: 0; font-family: "Amiri Quran", "Amiri", serif; font-size: clamp(2.1rem, 9.5vw, 2.8rem); line-height: 1.7;
+  color: #fff8e6; text-shadow: 0 0 26px rgba(255, 214, 140, .45), 0 2px 12px rgba(0, 0, 0, .6);
+  animation: versetAr 1.8s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes versetAr { from { opacity: 0; filter: blur(12px); transform: translateY(10px) scale(.97); } to { opacity: 1; filter: none; transform: none; } }
+.apres-oui .verset-fr {
+  margin: 2px 0 8px; font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-weight: 500;
+  font-size: 1.4rem; line-height: 1.3; color: #fbe9f0; text-shadow: 0 2px 14px rgba(26, 11, 30, .95);
+  animation: apparaitre 1.1s .9s cubic-bezier(.22, 1, .36, 1) both;
+}
+.verset-ref {
+  white-space: pre-line; line-height: 1.7;
+  font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--rose-clair); opacity: .85;
+  animation: apparaitre 1s 1.5s ease both;
+}
+.signature-fin.apres-verset { animation-delay: 2.3s; margin-top: 18px; }
 /* Signature finale */
 .signature-fin { margin: 6px 0 0; opacity: 0; animation: apparaitre 1.2s 1.4s cubic-bezier(.22, 1, .36, 1) both; }
 .signature-fin .noms { display: block; font-family: var(--script); font-weight: 700; font-size: 2.6rem; line-height: 1.1; color: #fff; text-shadow: 0 0 20px rgba(255, 92, 138, .7); }

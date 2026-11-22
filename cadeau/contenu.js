@@ -75,6 +75,13 @@ window.CADEAU = {
   non: ["Non", "Tu es sûre ?", "Vraiment ?", "Réfléchis bien…", "Dernière chance !"],
   essaisNon: 5,      // à chaque « Non », le bouton fuit et rapetisse, « Oui » grossit ; au 5e, « Non » disparaît
   apresOui: "Tu viens de faire de moi l'homme le plus heureux du monde.",
+
+  // Le verset qui apparaît ensuite (texte arabe et traduction de Muhammad Hamidullah, via quran.com)
+  verset: {
+    arabe: "وَخَلَقْنَـٰكُمْ أَزْوَٰجًا",
+    traduction: "« Nous vous avons créés en couples »",
+    reference: "Sourate An-Naba (78), verset 8 · trad. Muhammad Hamidullah"
+  },
   // La signature tout à la fin (laisse "" pour ne pas l'afficher)
   finNoms: "Shayma & Bilal",
   finDate: "",       // exemple : "14 février 2027"

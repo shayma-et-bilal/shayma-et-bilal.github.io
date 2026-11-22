@@ -734,12 +734,31 @@
     $("question").hidden = true;
     $("demande-pour").hidden = true;
     $("apres-oui").hidden = false;
-    if (C.finNoms) {
+    // 2e temps : le message laisse place au verset, puis à la signature
+    var V = C.verset || {};
+    var signer = function () {
+      if (!C.finNoms) return;
       texte("fin-noms", C.finNoms);
       texte("fin-date", C.finDate);
       $("fin-date").hidden = !C.finDate;
       $("signature-fin").hidden = false;
-    }
+    };
+    if (V.arabe) {
+      $("verset-ar").textContent = V.arabe;
+      texte("verset-fr", V.traduction);
+      texte("verset-ref", String(V.reference || "").replace(" · ", "\n"));
+      setTimeout(function () {
+        var moment = $("moment-oui");
+        moment.classList.add("part");
+        setTimeout(function () {
+          moment.hidden = true;
+          $("signature-fin").classList.add("apres-verset");
+          $("verset").hidden = false;
+          S.bague();
+          signer();
+        }, reduit ? 50 : 700);
+      }, reduit ? 1500 : 5200);
+    } else signer();
     document.body.classList.add("fin");
     if (!scene3d) eclat(source.x, source.y, 40, 300);
     confettis(90, source);
@@ -769,7 +788,7 @@
   /* ---------- Démarrage : polices chargées sans bloquer la page, puis on mesure les mots ---------- */
   var feuille = document.createElement("link");
   feuille.rel = "stylesheet";
-  feuille.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Dancing+Script:wght@700&family=Nunito:wght@400;600;700;800&display=swap";
+  feuille.href = "https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Dancing+Script:wght@700&family=Nunito:wght@400;600;700;800&display=swap";
   var feuillePrete = new Promise(function (r) { feuille.onload = r; feuille.onerror = r; });
   document.head.appendChild(feuille);
   var polices = feuillePrete.then(function () {
