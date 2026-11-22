@@ -23,10 +23,12 @@
   var ciel = document.querySelector(".sky");
   for (var i = 0; i < 9; i++) {
     var h = document.createElement("span");
-    h.className = "ico-coeur";
+    h.className = "ico-petale";
+    h.style.color = ["#e8c1b8", "#f4ece1", "#c98a8f"][i % 3];
     h.style.left = Math.random() * 100 + "%";
-    h.style.width = h.style.height = 8 + Math.random() * 8 + "px";
-    h.style.animationDuration = 9 + Math.random() * 10 + "s";
+    h.style.width = 7 + Math.random() * 6 + "px";
+    h.style.height = 10 + Math.random() * 8 + "px";
+    h.style.animationDuration = 14 + Math.random() * 12 + "s";
     h.style.animationDelay = -Math.random() * 18 + "s";
     ciel.appendChild(h);
   }
@@ -78,7 +80,8 @@
   function eclat(x, y, nombre, portee) {
     for (var n = 0; n < nombre; n++) {
       var s = document.createElement("span");
-      s.className = "eclat " + (Math.random() < .25 ? "ico-etoile" : "ico-coeur");
+      s.className = "eclat " + (Math.random() < .3 ? "ico-etoile" : "ico-petale");
+      if (s.className.indexOf("petale") > 0) s.style.color = ["#e8c1b8", "#f4ece1", "#c98a8f"][n % 3];
       var a = Math.random() * Math.PI * 2, d = portee * (0.4 + Math.random() * 0.6);
       s.style.left = x + "px";
       s.style.top = y + "px";
@@ -546,7 +549,7 @@
   var APPUIS = Math.max(1, parseInt(C.appuis, 10) || 5);
   var faits = 0, ouvert = false;
   var boite = $("boite"), couvercle = $("couvercle"), jauge = $("jauge"), consigne = $("consigne");
-  for (var ic = 0; ic < APPUIS; ic++) { var cr = document.createElement("i"); cr.className = "ico-coeur"; jauge.appendChild(cr); }
+  for (var ic = 0; ic < APPUIS; ic++) { var cr = document.createElement("i"); cr.className = "ico-fleur"; jauge.appendChild(cr); }
   function remplirJauge(n) {
     var crans = jauge.children;
     if (!crans[n - 1]) return;
@@ -767,7 +770,7 @@
 
   // Confettis : jaillissent du point de départ, montent, puis retombent (sous le texte, au-dessus de la 3D)
   function confettis(nombre, depuis) {
-    var couleurs = ["#f4c34f", "#ff5c8a", "#ffffff"];
+    var couleurs = ["#f4ece1", "#e8c1b8", "#d6b47a", "#c98a8f"];
     var conteneur = $("e-cadeau");
     for (var n = 0; n < nombre; n++) {
       var f = document.createElement("i");
@@ -780,7 +783,7 @@
       f.style.setProperty("--r", (Math.random() * 900 - 450) + "deg");
       f.style.setProperty("--d", 2.8 + Math.random() * 1.8 + "s");
       f.style.animationDelay = Math.random() * 0.25 + "s";
-      if (Math.random() < .35) { f.style.width = f.style.height = "8px"; f.style.borderRadius = "50%"; }
+      if (Math.random() < .4) { f.style.width = "8px"; f.style.height = "12px"; }
       conteneur.appendChild(f);
       setTimeout(f.remove.bind(f), 5500);
     }
@@ -788,12 +791,12 @@
   /* ---------- Démarrage : polices chargées sans bloquer la page, puis on mesure les mots ---------- */
   var feuille = document.createElement("link");
   feuille.rel = "stylesheet";
-  feuille.href = "https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Dancing+Script:wght@700&family=Nunito:wght@400;600;700;800&display=swap";
+  feuille.href = "https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Great+Vibes&family=Nunito:wght@400;600;700;800&display=swap";
   var feuillePrete = new Promise(function (r) { feuille.onload = r; feuille.onerror = r; });
   document.head.appendChild(feuille);
   var polices = feuillePrete.then(function () {
     return (document.fonts && document.fonts.load)
-      ? Promise.all([document.fonts.load("600 16px Nunito"), document.fonts.load("700 40px 'Dancing Script'")])
+      ? Promise.all([document.fonts.load("600 16px Nunito"), document.fonts.load("40px 'Great Vibes'")])
       : null;
   });
   Promise.race([polices, new Promise(function (r) { setTimeout(r, 2500); })]).then(lancerIntro, lancerIntro);

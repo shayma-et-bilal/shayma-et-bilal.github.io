@@ -13,9 +13,9 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (t) => t[(Math.random() * t.length) | 0];
 const rgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
 
-const OR = ['#ffd98a', '#f4c34f', '#fff3c9'];
-const ROSE = ['#ff5c8a', '#ffb3c7', '#ff8fb0'];
-const BLANC = ['#ffffff', '#fff6ee'];
+const OR = ['#e9cf98', '#d6b47a', '#f4e6c8'];
+const ROSE = ['#e8c1b8', '#f4ece1', '#c98a8f']; // pétales : blush, ivoire, rose ancien
+const BLANC = ['#ffffff', '#f4ece1'];
 
 // Dimensions de la boîte (unités 3D)
 const W = 1.55, H = 1.25, LH = 0.34, LW = W + 0.12;
@@ -56,15 +56,20 @@ const texEtoile = () => texture((g, s) => {
     g.fillStyle = l; g.beginPath(); g.ellipse(0, 0, L, w / 2, 0, 0, TAU); g.fill(); g.restore();
   });
 });
-const texCoeur = () => texture((g, s) => {
+// Pétale (forme de goutte, légère nervure) : remplace les cœurs
+const texPetale = () => texture((g, s) => {
   g.translate(s / 2, s / 2);
-  g.shadowColor = 'rgba(255,255,255,.9)'; g.shadowBlur = s * 0.12;
-  g.fillStyle = '#fff';
+  g.shadowColor = 'rgba(255,255,255,.6)'; g.shadowBlur = s * 0.08;
+  const d = g.createLinearGradient(0, -s * 0.4, 0, s * 0.4);
+  d.addColorStop(0, 'rgba(255,255,255,1)'); d.addColorStop(1, 'rgba(255,255,255,.7)');
+  g.fillStyle = d;
   g.beginPath();
-  g.moveTo(0, s * 0.27);
-  g.bezierCurveTo(-s * 0.42, s * 0.02, -s * 0.3, -s * 0.34, 0, -s * 0.12);
-  g.bezierCurveTo(s * 0.3, -s * 0.34, s * 0.42, s * 0.02, 0, s * 0.27);
+  g.moveTo(0, -s * 0.42);
+  g.bezierCurveTo(s * 0.3, -s * 0.2, s * 0.26, s * 0.22, 0, s * 0.42);
+  g.bezierCurveTo(-s * 0.26, s * 0.22, -s * 0.3, -s * 0.2, 0, -s * 0.42);
   g.fill();
+  g.shadowBlur = 0; g.strokeStyle = 'rgba(0,0,0,.12)'; g.lineWidth = s * 0.012;
+  g.beginPath(); g.moveTo(0, -s * 0.3); g.quadraticCurveTo(s * 0.03, 0, 0, s * 0.34); g.stroke();
 });
 const texOmbre = () => texture((g, s) => {
   const r = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
@@ -73,7 +78,7 @@ const texOmbre = () => texture((g, s) => {
 });
 const texInterieur = () => texture((g, s) => {
   const r = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s * 0.62);
-  r.addColorStop(0, '#fff6d8'); r.addColorStop(0.3, '#ffc65c'); r.addColorStop(0.7, '#b0154f'); r.addColorStop(1, '#3a0a22');
+  r.addColorStop(0, '#fff6e0'); r.addColorStop(0.3, '#f0cf8a'); r.addColorStop(0.7, '#7a2e3b'); r.addColorStop(1, '#2a0e16');
   g.fillStyle = r; g.fillRect(0, 0, s, s);
 }, 256);
 
@@ -201,11 +206,11 @@ function creerFaisceau() {
 /* ---------- La boîte cadeau ---------- */
 function creerBoite() {
   const matBoite = new THREE.MeshPhysicalMaterial({
-    color: '#8c1240', roughness: 0.5, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.3,
-    sheen: 0.6, sheenColor: new THREE.Color('#ff7aa5'), sheenRoughness: 0.45, envMapIntensity: 0.6
+    color: '#5e1a2a', roughness: 0.55, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.3,
+    sheen: 0.6, sheenColor: new THREE.Color('#d98c96'), sheenRoughness: 0.45, envMapIntensity: 0.6
   });
   const matRuban = new THREE.MeshPhysicalMaterial({
-    color: '#e3a83f', roughness: 0.36, metalness: 0.35, sheen: 1, sheenColor: new THREE.Color('#fff1c4'), sheenRoughness: 0.35,
+    color: '#d6b47a', roughness: 0.36, metalness: 0.35, sheen: 1, sheenColor: new THREE.Color('#fff1c4'), sheenRoughness: 0.35,
     clearcoat: 0.2, clearcoatRoughness: 0.4
   });
 
@@ -354,11 +359,11 @@ export function creerScene3D(hote, { reduit = false } = {}) {
   });
 
   // Lumières
-  scene.add(new THREE.HemisphereLight('#ffd9e6', '#2a0f2e', 0.35));
+  scene.add(new THREE.HemisphereLight('#f3e3d6', '#1c1418', 0.4));
   const cle = new THREE.DirectionalLight('#fff1e0', 2.3);
   cle.position.set(3, 5, 4);
   scene.add(cle);
-  const contreRose = new THREE.PointLight('#ff4f8b', 32, 16, 2);
+  const contreRose = new THREE.PointLight('#c98a8f', 30, 16, 2);
   contreRose.position.set(-3.2, 3, -3);
   const contreOr = new THREE.PointLight('#ffd27a', 20, 16, 2);
   contreOr.position.set(3.2, 1.6, -2.6);
@@ -367,7 +372,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
   lumInt.position.set(0, H * 0.75, 0);
   scene.add(lumInt);
 
-  const tL = texLueur(), tE = texEtoile(), tC = texCoeur();
+  const tL = texLueur(), tE = texEtoile(), tC = texPetale();
 
   // Ombre douce au sol
   const ombre = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshBasicMaterial({ map: texOmbre(), transparent: true, depthWrite: false, opacity: 0.6 }));
@@ -495,7 +500,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
         tOrbite -= 0.09;
         const a = Math.random() * TAU;
         etincelles.emettre({ nombre: 1, origine: centreBague.clone().add(new THREE.Vector3(Math.cos(a) * 0.95, rand(-0.6, 0.9), Math.sin(a) * 0.5)),
-          direction: new THREE.Vector3(0, 1, 0), cone: 0.4, vitesse: [0.05, 0.25], couleurs: [...OR, ...BLANC, '#ffb3c7'],
+          direction: new THREE.Vector3(0, 1, 0), cone: 0.4, vitesse: [0.05, 0.25], couleurs: [...OR, ...BLANC, '#e8c1b8'],
           taille: [0.04, 0.1], vie: [1, 2], opacite: 0.9 });
       }
       tEclat -= dt;
@@ -593,7 +598,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
           etincelles.emettre({ nombre: 90, origine: o, rayon: 0.2, cone: 1.5, vitesse: [1.5, 3.5],
             couleurs: [...OR, ...BLANC], taille: [0.05, 0.12], vie: [0.6, 1.2], gravite: 0.5, frein: 2 });
           coeurs.emettre({ nombre: 34, origine: o, rayon: W * 0.3, cone: 0.7, vitesse: [1.8, 4.2],
-            couleurs: [...ROSE, '#ff3d77'], taille: [0.14, 0.3], vie: [1.4, 2.6], gravite: 1.6, frein: 0.8, tourne: 0.4 });
+            couleurs: [...ROSE, '#b9737a'], taille: [0.14, 0.3], vie: [1.4, 2.6], gravite: 1.6, frein: 0.8, tourne: 0.4 });
         }, T)
         .fromTo(flash.scale, { x: 0.5, y: 0.5 }, { x: 7, y: 7, duration: 0.7, ease: 'expo.out' }, T)
         .fromTo(flash.material, { opacity: 1 }, { opacity: 0, duration: 0.9, ease: 'power2.out' }, T)
@@ -631,7 +636,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     gsap.fromTo(BG.bague.scale, { x: 1, y: 1, z: 1 }, { x: 1.12, y: 1.12, z: 1.12, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.out' });
     gsap.fromTo(BG.halo.material, { opacity: 1.2 }, { opacity: 0.55, duration: 1.6 });
     const c = new THREE.Vector3(); BG.bague.getWorldPosition(c);
-    coeurs.emettre({ nombre: 60, origine: c, rayon: 0.3, cone: Math.PI, vitesse: [1, 3.2], couleurs: [...ROSE, '#ff3d77'],
+    coeurs.emettre({ nombre: 60, origine: c, rayon: 0.3, cone: Math.PI, vitesse: [1, 3.2], couleurs: [...ROSE, '#b9737a'],
       taille: [0.12, 0.28], vie: [1.6, 2.8], gravite: 0.6, frein: 1, tourne: 0.4 });
     etincelles.emettre({ nombre: 200, origine: c, rayon: 0.2, cone: Math.PI, vitesse: [1.5, 4.5], couleurs: [...OR, ...BLANC],
       taille: [0.05, 0.14], vie: [0.8, 1.8], gravite: 1, frein: 1.2 });
