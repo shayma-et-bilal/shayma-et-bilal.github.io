@@ -42,7 +42,7 @@ window.CADEAU = {
 
   // 1. Le code secret à taper (4 à 6 chiffres)
   code: "1704",
-  indice: "Indice : notre date à nous (JJMM)",   // "" pour ne rien afficher
+  indice: "Indice : ta date",   // "" pour ne rien afficher
 
   // À qui est destiné le cadeau, et de qui il vient
   pour: "Mon amour",
