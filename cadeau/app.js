@@ -57,7 +57,10 @@
     if (actuel) actuel.classList.add("sort");
     setTimeout(function () {
       if (actuel) { actuel.hidden = true; actuel.classList.remove("actif", "sort", "entre"); }
-      if (actuel && actuel.id === "e-intro" && jardin) { jardin.detruire(); jardin = null; }
+      if (actuel && actuel.id === "e-intro" && jardin) {
+        document.body.classList.add("jardin-fond");
+        setTimeout(function () { if (jardin && !document.body.classList.contains("jardin-retour")) jardin.figer(); }, 1700);
+      }
       suivant.hidden = false;
       suivant.classList.add("actif", "entre");
       suivant.addEventListener("animationend", function finEntree(e) {
@@ -158,11 +161,12 @@
   var LONGUEUR = Math.min(Math.max(CODE.length, 4), 6);
   var saisie = "", bloque = false;
 
-  texte("verrou-pour", C.pour ? "Pour " + C.pour : "");
+  var pourQui = C.pour ? "Pour " + C.pour.charAt(0).toLowerCase() + C.pour.slice(1) : "";
+  texte("verrou-pour", pourQui);
   texte("indice", C.indice);
 
   var points = $("points");
-  for (var p = 0; p < LONGUEUR; p++) points.appendChild(document.createElement("i"));
+  for (var p = 0; p < LONGUEUR; p++) { var bourgeon = document.createElement("i"); bourgeon.className = "ico-fleur"; points.appendChild(bourgeon); }
   function afficherPoints() {
     var dots = points.children;
     for (var k = 0; k < dots.length; k++) dots[k].classList.toggle("plein", k < saisie.length);
@@ -224,14 +228,14 @@
       vibrer([30, 40, 60]);
       $("e-code").classList.add("ouvert");
       eclat(window.innerWidth / 2, window.innerHeight * 0.25, 26, 260);
-      setTimeout(function () { allerA("e-photos"); }, 700);
+      setTimeout(function () { allerA("e-photos"); }, 1100);
     } else {
       S.erreur();
       vibrer(150);
-      points.classList.add("secoue");
-      texte("message", "Ce n'est pas le bon code, réessaie");
+      points.classList.add("retombe");
+      texte("message", "Pas tout à fait… essaie encore");
       setTimeout(function () {
-        points.classList.remove("secoue");
+        points.classList.remove("retombe");
         saisie = "";
         afficherPoints();
         bloque = false;
@@ -240,7 +244,7 @@
   }
 
   /* ---------- 2. Les photos ---------- */
-  texte("photos-pour", C.pour ? "Pour " + C.pour : "");
+  texte("photos-pour", pourQui);
   texte("t-photos", C.photosTitre || "Nos souvenirs");
   var galerie = $("galerie"), reperes = $("reperes");
   (C.photos || []).forEach(function (ph, idx) {
@@ -290,7 +294,7 @@
   var corps = $("lettre-texte");
   (C.lettre || []).forEach(function (para) {
     var pEl = document.createElement("p");
-    pEl.textContent = para;
+    pEl.textContent = typo(para);
     corps.appendChild(pEl);
   });
   texte("signature", C.signature);
@@ -312,7 +316,7 @@
     // 2. le rabat bascule, la lettre sort de l'enveloppe
     setTimeout(function () { S.papier(); enveloppe.classList.add("sortie"); }, 750 * vite);
     // 3. l'enveloppe s'efface, la lettre se déplie, les paragraphes arrivent un par un
-    setTimeout(function () { enveloppe.classList.add("partie"); }, 1500 * vite);
+    setTimeout(function () { enveloppe.classList.add("partie"); $("e-lettre").classList.add("lue"); }, 1500 * vite);
     setTimeout(function () {
       enveloppe.hidden = true;
       $("ouvrir-lettre").hidden = true;
@@ -321,7 +325,7 @@
       lignes.forEach(function (pEl, i) { pEl.style.animationDelay = (0.55 + i * 0.32) * vite + "s"; });
       lettre.hidden = false;
       var bouton = $("apres-lettre");
-      bouton.style.animationDelay = (0.9 + lignes.length * 0.32) * vite + "s";
+      bouton.style.animationDelay = (2.5 + lignes.length * 0.32) * vite + "s";
       bouton.hidden = false;
       lettre.setAttribute("tabindex", "-1");
       lettre.focus({ preventScroll: true });
@@ -368,7 +372,7 @@
     crans[n - 1].classList.add("plein");
     if (n === APPUIS) crans[n - 1].classList.add("dernier");
   }
-  var relances = ["Encore !", "Plus fort…", "Ça bouge…", "Continue…"];
+  var relances = ["Encore…", "Encore un peu…", "Presque…", "Doucement…"].map(typo);
   texte("t-cadeau", C.cadeauTitre || "Une dernière surprise…");
 
   boite.addEventListener("click", function () {
@@ -381,7 +385,7 @@
     if (scene3d) {
       scene3d.appuyer(faits, APPUIS);
       if (reste <= 0) return ouvrirCadeau();
-      consigne.textContent = reste === 1 ? "Encore une fois !" : relances[(faits - 1) % relances.length];
+      consigne.textContent = reste === 1 ? "Une dernière fois…" : relances[(faits - 1) % relances.length];
       return;
     }
     boite.style.setProperty("--force", String(1 + faits * 0.45));
@@ -395,7 +399,7 @@
     eclat(c.x, c.y - 40, 4 + faits * 2, 90 + faits * 25);
 
     if (reste <= 0) return ouvrirCadeau();
-    consigne.textContent = reste === 1 ? "Encore une fois !" : relances[(faits - 1) % relances.length];
+    consigne.textContent = reste === 1 ? "Une dernière fois…" : relances[(faits - 1) % relances.length];
   });
 
   function ouvrirCadeau() {
@@ -445,6 +449,7 @@
   boutonNon.className = "btn btn-non";
   var TEXTES_NON = [].concat(C.non || "Non").filter(Boolean);
   if (!TEXTES_NON.length) TEXTES_NON = ["Non"];
+  TEXTES_NON = TEXTES_NON.map(typo);
   boutonNon.textContent = TEXTES_NON[0];
   boutonNon.addEventListener("click", direNon);
   reponses.appendChild(boutonOui);
@@ -556,6 +561,7 @@
       texte("fin-noms", C.finNoms);
       texte("fin-date", C.finDate);
       $("fin-date").hidden = !C.finDate;
+      $("signature-fin").classList.toggle("sans-date", !C.finDate);
       $("signature-fin").hidden = false;
     };
     if (V.arabe) {
@@ -572,12 +578,12 @@
           S.bague();
           signer();
         }, reduit ? 50 : 700);
-      }, reduit ? 1500 : 5200);
+      }, reduit ? 1500 : 6500);
     } else signer();
-    document.body.classList.add("fin");
+    document.body.classList.add("fin", "jardin-retour");
+    if (jardin) { jardin.reprendre(); setTimeout(function () { if (jardin) jardin.figer(); }, 12000); }
     if (!scene3d) eclat(source.x, source.y, 40, 300);
-    confettis(90, source);
-    setTimeout(function () { confettis(50, source); }, 1100);
+    if (!scene3d) confettis(60, source);
   }
 
   // Confettis : jaillissent du point de départ, montent, puis retombent (sous le texte, au-dessus de la 3D)
@@ -600,6 +606,8 @@
       setTimeout(f.remove.bind(f), 5500);
     }
   }
+  document.body.classList.add("debut");
+  setTimeout(function () { document.body.classList.remove("debut"); }, 6000);
   /* ---------- Démarrage : polices chargées sans bloquer la page, puis on mesure les mots ---------- */
   var feuille = document.createElement("link");
   feuille.rel = "stylesheet";

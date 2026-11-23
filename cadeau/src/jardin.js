@@ -1400,9 +1400,9 @@ export function creerJardin(conteneur, { phrases = [], centre = 'ma paix', redui
     // Les cinq premières restent seules ≥ 1,8 s avant l'éclosion suivante, la sixième ~1,2 s ;
     // ensuite le crescendo accélère, sans descendre sous 0,55 s : chaque phrase reste
     // « seule ou presque » (au plus une autre en train d'apparaître) pendant ≥ 0,9 s.
-    const D = [2.12, 2.12, 2.12, 2.12, 2.12, 1.45, 0.95, 0.78, 0.67, 0.6, 0.57, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.58];
+    const D = [2.12, 2.12, 2.12, 2.12, 2.12, 1.9, 1.1, 0.9, 0.8, 0.72, 0.68, 0.66, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.68];
     const B = [2.2];
-    for (let i = 1; i < n; i++) B.push(B[i - 1] + (D[i - 1] ?? 0.55));
+    for (let i = 1; i < n; i++) B.push(B[i - 1] + (D[i - 1] ?? 0.65));
     return B;
   }
 
@@ -1503,8 +1503,9 @@ export function creerJardin(conteneur, { phrases = [], centre = 'ma paix', redui
       tl.to(c.s, { o: 0.85, duration: 0.8, ease: 'sine.out' }, t0);
       tl.to(c.s, { o: 0, duration: 1.4, ease: 'sine.in' }, t0 + d - 1.4);
     });
-    tl.call(finir, null, Tpaix + 1.4);
-    sc.duree = Tpaix + 1.4;
+    tl.to(textes.map((m) => m.s), { o: (q) => (textes[q].repos >= 0.8 ? 0.5 : 0.34), duration: 1.8, ease: 'sine.inOut' }, Tpaix - 0.4);
+    tl.call(finir, null, Tpaix + 4.2);
+    sc.duree = Tpaix + 4.2;
     sc.Tpaix = Tpaix;
     return tl;
   }
@@ -1710,7 +1711,20 @@ export function creerJardin(conteneur, { phrases = [], centre = 'ma paix', redui
     sc = null;
   }
 
+  let fige = false;
   return {
+    figer() {
+      if (detruit || fige) return;
+      fige = true;
+      gsap.ticker.remove(rendre);
+      if (sc) { sc.tl.pause(); if (sc.cascade) sc.cascade.pause(); }
+    },
+    reprendre() {
+      if (detruit || !fige) return;
+      fige = false;
+      gsap.ticker.add(rendre);
+      if (sc) { sc.tl.play(); if (sc.cascade) sc.cascade.play(); }
+    },
     lancer() {
       if (lance || detruit) return;
       lance = true;

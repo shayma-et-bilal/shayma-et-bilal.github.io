@@ -107,7 +107,7 @@ const fsParticules = /* glsl */`
   }`;
 
 class Particules {
-  constructor(n, tex) {
+  constructor(n, tex, fusion = THREE.AdditiveBlending) {
     this.n = n; this.i = 0; this.t = 0;
     const f = (k) => new Float32Array(n * k);
     Object.assign(this, {
@@ -121,7 +121,7 @@ class Particules {
     this.mat = new THREE.ShaderMaterial({
       uniforms: { uTex: { value: tex }, uScale: { value: 400 } },
       vertexShader: vsParticules, fragmentShader: fsParticules,
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+      transparent: true, depthWrite: false, blending: fusion
     });
     this.points = new THREE.Points(g, this.mat);
     this.points.frustumCulled = false;
@@ -206,13 +206,10 @@ function creerFaisceau() {
 /* ---------- La boîte cadeau ---------- */
 function creerBoite() {
   const matBoite = new THREE.MeshPhysicalMaterial({
-    color: '#5e1a2a', roughness: 0.55, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.3,
-    sheen: 0.6, sheenColor: new THREE.Color('#d98c96'), sheenRoughness: 0.45, envMapIntensity: 0.6
+    color: '#3d0f1a', roughness: 0.62, metalness: 0, clearcoat: 0.06, clearcoatRoughness: 0.5,
+    sheen: 0.25, sheenColor: new THREE.Color('#7a2e3b'), sheenRoughness: 0.6, envMapIntensity: 0.3
   });
-  const matRuban = new THREE.MeshPhysicalMaterial({
-    color: '#d6b47a', roughness: 0.36, metalness: 0.35, sheen: 1, sheenColor: new THREE.Color('#fff1c4'), sheenRoughness: 0.35,
-    clearcoat: 0.2, clearcoatRoughness: 0.4
-  });
+  const matRuban = new THREE.MeshPhysicalMaterial({ color: '#c9a46a', metalness: 0.85, roughness: 0.28, clearcoat: 0.3, clearcoatRoughness: 0.3 });
 
   const racine = new THREE.Group();   // saut + rotation lente
   const tilt = new THREE.Group();     // bascule pendant les secousses
@@ -249,7 +246,7 @@ function creerBoite() {
   const boucleGeo = new THREE.TorusGeometry(0.27, 0.06, 18, 56);
   [-1, 1].forEach((cote) => {
     const b = new THREE.Mesh(boucleGeo, matRuban);
-    b.scale.set(1, 0.6, 0.42); // boucle aplatie : un ruban, pas un anneau
+    b.scale.set(1, 0.55, 0.18); // boucle très aplatie : un ruban, pas un anneau
     b.position.set(cote * 0.27, 0.17, 0);
     b.rotation.set(0, cote * 0.5, cote * -0.42);
     noeud.add(b);
@@ -270,7 +267,7 @@ function creerBoite() {
 
 /* ---------- La bague ---------- */
 function creerBague(texE, texL) {
-  const matOr = new THREE.MeshPhysicalMaterial({ color: '#f1c66a', metalness: 1, roughness: 0.14, clearcoat: 0.6, clearcoatRoughness: 0.08, envMapIntensity: 1.5 });
+  const matOr = new THREE.MeshPhysicalMaterial({ color: '#e2c08a', metalness: 1, roughness: 0.18, clearcoat: 0.5, clearcoatRoughness: 0.1, envMapIntensity: 1.1 });
   const matDiamant = new THREE.MeshPhysicalMaterial({
     color: '#f2f9ff', metalness: 1, roughness: 0, iridescence: 0.35, iridescenceIOR: 1.8,
     envMapIntensity: 5, flatShading: true, clearcoat: 1, clearcoatRoughness: 0
@@ -281,13 +278,13 @@ function creerBague(texE, texL) {
   const balance = new THREE.Group();    // balancement au repos
   bague.add(tour); tour.add(balance);
 
-  const R = 0.44, T = 0.07;
+  const R = 0.44, T = 0.052;
   balance.add(new THREE.Mesh(new THREE.TorusGeometry(R, T, 48, 180), matOr));
 
   const yG = R + T + 0.2; // hauteur du rondiste (le « tour » du diamant)
   const profil = [[0.0005, -0.25], [0.26, -0.015], [0.275, 0], [0.26, 0.035], [0.165, 0.115], [0.0005, 0.115]]
     .map(([x, y]) => new THREE.Vector2(x, y));
-  const geoD = new THREE.LatheGeometry(profil, 16).toNonIndexed();
+  const geoD = new THREE.LatheGeometry(profil, 32).toNonIndexed();
   geoD.computeVertexNormals();
   const diamant = new THREE.Mesh(geoD, matDiamant);
   diamant.position.y = yG;
@@ -312,7 +309,7 @@ function creerBague(texE, texL) {
   }
 
   // Halo derrière la bague et éclat sur le diamant
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: texL, color: '#ffc98a', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: texL, color: '#f4ece1', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
   halo.scale.set(3.2, 3.2, 1); halo.position.set(0, 0.2, -0.4);
   bague.add(halo);
   const eclat = new THREE.Sprite(new THREE.SpriteMaterial({ map: texE, color: '#ffffff', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
@@ -363,7 +360,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
   const cle = new THREE.DirectionalLight('#fff1e0', 2.3);
   cle.position.set(3, 5, 4);
   scene.add(cle);
-  const contreRose = new THREE.PointLight('#c98a8f', 30, 16, 2);
+  const contreRose = new THREE.PointLight('#c98a8f', 12, 16, 2);
   contreRose.position.set(-3.2, 3, -3);
   const contreOr = new THREE.PointLight('#ffd27a', 20, 16, 2);
   contreOr.position.set(3.2, 1.6, -2.6);
@@ -409,8 +406,9 @@ export function creerScene3D(hote, { reduit = false } = {}) {
 
   const etincelles = new Particules(700, tE);
   const coeurs = new Particules(160, tC);
+  const petalesLents = new Particules(60, tC, THREE.NormalBlending);
   const poussiere = new Particules(140, tL);
-  scene.add(poussiere.points, etincelles.points, coeurs.points);
+  scene.add(poussiere.points, etincelles.points, coeurs.points, petalesLents.points);
 
   /* ---------- Caméra : cadrages ---------- */
   const cam = { px: 0, py: 3, pz: 10, tx: 0, ty: 1, tz: 0, recul: 1 };
@@ -420,7 +418,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), a = camera.aspect;
     let w, h, remplissage, cy, decal, elev;
     if (m === 'boite') { w = 2.6; h = 2.6; remplissage = 0.8; cy = 0.95; decal = -0.1; elev = 0.34; }
-    else { w = 1.35; h = 1.55; remplissage = 0.7; cy = BAGUE_Y + 0.12; decal = 0.14; elev = 0.08; }
+    else { w = 1.9; h = 2.1; remplissage = 0.7; cy = BAGUE_Y + 0.12; decal = 0.2; elev = 0.08; }
     const d = Math.max((h / 2) / t, (w / 2) / (t * a)) / remplissage;
     const visH = 2 * d * t;
     const cible = new THREE.Vector3(0, cy - visH * decal, 0);
@@ -440,7 +438,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     const echelle = renderer.getPixelRatio() * h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
-    [etincelles, coeurs, poussiere].forEach((p) => { p.mat.uniforms.uScale.value = echelle; });
+    [etincelles, coeurs, poussiere, petalesLents].forEach((p) => { p.mat.uniforms.uScale.value = echelle; });
     if (mode === 'ouverture') recadrer = true;
     else { gsap.killTweensOf(cam, 'px,py,pz,tx,ty,tz'); Object.assign(cam, cadrage(mode)); }
   }
@@ -493,7 +491,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
       BG.balance.rotation.y = Math.sin(tBague * 0.6) * 0.5;
       BG.balance.rotation.x = Math.sin(tBague * 0.9) * 0.05;
       BG.balance.position.y = Math.sin(tBague * 1.3) * 0.06;
-      BG.halo.material.opacity = 0.5 + Math.sin(tBague * 2) * 0.08;
+      BG.halo.material.opacity = 0.2 + Math.sin(tBague * 2) * 0.04;
       tOrbite += dt;
       BG.bague.getWorldPosition(centreBague);
       while (tOrbite > 0.09) {
@@ -508,7 +506,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     }
     faisceau.material.uniforms.uTemps.value = t;
 
-    etincelles.maj(dt); coeurs.maj(dt); poussiere.maj(dt);
+    etincelles.maj(dt); coeurs.maj(dt); poussiere.maj(dt); petalesLents.maj(dt);
 
     // Caméra
     camera.position.set(cam.tx + (cam.px - cam.tx) * cam.recul, cam.ty + (cam.py - cam.ty) * cam.recul, cam.tz + (cam.pz - cam.tz) * cam.recul);
@@ -538,21 +536,21 @@ export function creerScene3D(hote, { reduit = false } = {}) {
     const sq = B.squash.scale, cv = B.couvercle;
     gsap.killTweensOf([sq, B.racine.position, B.tilt.rotation, cv.position, cv.rotation]);
     gsap.timeline()
-      .to(sq, { x: 1 + 0.13 * f, y: 1 - 0.19 * f, z: 1 + 0.13 * f, duration: 0.08, ease: 'power2.out' })
+      .to(sq, { x: 1 + 0.05 * f, y: 1 - 0.07 * f, z: 1 + 0.05 * f, duration: 0.1, ease: 'power2.out' })
       .to(sq, { x: 1 - 0.06 * f, y: 1 + 0.12 * f, z: 1 - 0.06 * f, duration: 0.14, ease: 'power2.out' })
-      .to(sq, { x: 1, y: 1, z: 1, duration: 0.9, ease: 'elastic.out(1, 0.3)' });
+      .to(sq, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'elastic.out(1, 0.6)' });
     gsap.timeline({ delay: 0.07 })
-      .to(B.racine.position, { y: 0.16 + 0.24 * k, duration: 0.2, ease: 'power2.out' })
-      .to(B.racine.position, { y: 0, duration: 0.42, ease: 'bounce.out' });
+      .to(B.racine.position, { y: 0.06 + 0.1 * k, duration: 0.22, ease: 'power2.out' })
+      .to(B.racine.position, { y: 0, duration: 0.5, ease: 'power2.inOut' });
     gsap.timeline()
       .to(B.tilt.rotation, { z: cote * (0.07 + 0.1 * k), x: -cote * 0.05 * f, duration: 0.1 })
       .to(B.tilt.rotation, { z: 0, x: 0, duration: 1.1, ease: 'elastic.out(1.2, 0.25)' });
     gsap.timeline({ delay: 0.05 })
       .to(cv.position, { y: COUV_Y + 0.1 + 0.2 * k, duration: 0.16, ease: 'power3.out' })
-      .to(cv.position, { y: COUV_Y + 0.05 * k, duration: 0.55, ease: 'bounce.out' });
+      .to(cv.position, { y: COUV_Y + 0.05 * k, duration: 0.6, ease: 'power2.inOut' });
     gsap.timeline({ delay: 0.05 })
       .to(cv.rotation, { z: -cote * 0.12 * f, x: cote * 0.07, duration: 0.12 })
-      .to(cv.rotation, { z: 0, x: 0, duration: 1, ease: 'elastic.out(1, 0.3)' });
+      .to(cv.rotation, { z: 0, x: 0, duration: 1, ease: 'elastic.out(1, 0.6)' });
     gsap.to(lumInt, { intensity: 3 + 12 * k, duration: 0.3 });
     gsap.fromTo(fuite.material, { opacity: 0.35 + 0.65 * k }, { opacity: 0.12 + 0.45 * k, duration: 1.2, ease: 'power2.out' });
     etincelles.emettre({ nombre: 10 + n * 6, origine: new THREE.Vector3(0, H + 0.05, 0), rayon: W * 0.55, cone: 0.9,
@@ -613,7 +611,7 @@ export function creerScene3D(hote, { reduit = false } = {}) {
         .fromTo(BG.bague.position, { y: 0.55 }, { y: BAGUE_Y, duration: 3.4, ease: 'power2.inOut' }, S)
         .fromTo(BG.bague.scale, { x: 0.6, y: 0.6, z: 0.6 }, { x: 1, y: 1, z: 1, duration: 3, ease: 'power2.out' }, S)
         .fromTo(BG.tour.rotation, { y: reduit ? -0.4 : -TAU * 1.25, x: reduit ? 0.1 : 0.55 }, { y: 0, x: 0.06, duration: 3.6, ease: 'power3.out' }, S)
-        .to(BG.halo.material, { opacity: 0.55, duration: 1.8 }, S + 1.4)
+        .to(BG.halo.material, { opacity: 0.22, duration: 1.8 }, S + 1.4)
         .to(cam, { ...fin, recul: 1, duration: 3.6, ease: 'power2.inOut' }, S + 0.2)
         .add(() => { traine = false; }, S + 2.6)
         .to(B.racine.position, { y: -2.6, duration: 2.6, ease: 'power2.inOut' }, S + 1)
@@ -634,13 +632,12 @@ export function creerScene3D(hote, { reduit = false } = {}) {
   function celebrer() {
     if (!reduit) gsap.to(BG.tour.rotation, { y: '+=' + TAU * 2, duration: 2, ease: 'power3.inOut' });
     gsap.fromTo(BG.bague.scale, { x: 1, y: 1, z: 1 }, { x: 1.12, y: 1.12, z: 1.12, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.out' });
-    gsap.fromTo(BG.halo.material, { opacity: 1.2 }, { opacity: 0.55, duration: 1.6 });
+    gsap.fromTo(BG.halo.material, { opacity: 0.5 }, { opacity: 0.22, duration: 2 });
     const c = new THREE.Vector3(); BG.bague.getWorldPosition(c);
-    coeurs.emettre({ nombre: 60, origine: c, rayon: 0.3, cone: Math.PI, vitesse: [1, 3.2], couleurs: [...ROSE, '#b9737a'],
-      taille: [0.12, 0.28], vie: [1.6, 2.8], gravite: 0.6, frein: 1, tourne: 0.4 });
-    etincelles.emettre({ nombre: 200, origine: c, rayon: 0.2, cone: Math.PI, vitesse: [1.5, 4.5], couleurs: [...OR, ...BLANC],
-      taille: [0.05, 0.14], vie: [0.8, 1.8], gravite: 1, frein: 1.2 });
-    secouer(0.05, 0.5);
+    petalesLents.emettre({ nombre: 28, origine: c.clone().add(new THREE.Vector3(0, 0.6, 0)), rayon: 1.1, hauteur: 0.4, cone: Math.PI * 0.6,
+      vitesse: [0.4, 1.2], couleurs: ROSE, taille: [0.14, 0.24], vie: [4, 6], gravite: 0.25, frein: 0.6, tourne: 0.5, opacite: 0.85 });
+    etincelles.emettre({ nombre: 80, origine: c, rayon: 0.2, cone: Math.PI, vitesse: [1, 3], couleurs: [...OR, ...BLANC],
+      taille: [0.05, 0.12], vie: [0.8, 1.8], gravite: 0.6, frein: 1.4 });
     scintiller();
     if (!reduit) gsap.to(cam, { recul: 0.93, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 4 });
   }

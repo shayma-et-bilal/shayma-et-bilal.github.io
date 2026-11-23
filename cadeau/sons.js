@@ -66,15 +66,16 @@ window.Sons = (function () {
   }
 
   return {
-    touche: function () { note(1046, 0, 0.09, { type: "triangle", vol: 0.12 }); },
-    effacer: function () { note(660, 0, 0.08, { type: "triangle", vol: 0.08, vers: 520 }); },
+    // sons doux (sinus, attaques lentes) : rien qui rappelle un jeu vidéo
+    touche: function () { note(880, 0, 0.16, { type: "sine", vol: 0.07, attaque: 0.006 }); },
+    effacer: function () { note(587, 0, 0.14, { type: "sine", vol: 0.05, vers: 523 }); },
     erreur: function () {
-      note(311, 0, 0.18, { type: "square", vol: 0.05, vers: 233 });
-      note(233, 0.16, 0.28, { type: "square", vol: 0.05, vers: 175 });
+      note(294, 0, 0.5, { type: "sine", vol: 0.08, vers: 262, attaque: 0.02 });
+      note(220, 0.06, 0.6, { type: "sine", vol: 0.05, attaque: 0.03 });
     },
     ouvert: function () {
-      [523, 659, 784, 1047].forEach(function (f, i) { note(f, i * 0.09, 0.45, { type: "triangle", vol: 0.12 }); });
-      cloche(2093, 0.36, 0.05);
+      // accord suspendu qui se résout, comme une petite boîte à musique
+      cloche(784, 0, 0.07); cloche(1175, 0.12, 0.05); cloche(1568, 0.26, 0.04);
     },
     page: function () { souffle(0, 0.45, { de: 400, vers: 2400, vol: 0.07 }); },
     papier: function () {
@@ -101,10 +102,9 @@ window.Sons = (function () {
       note(880 + n * 140, 0.14, 0.3, { type: "sine", vol: 0.07 });
     },
     oui: function () {
-      var gamme = [523, 659, 784, 1047, 1319, 1568];
-      gamme.forEach(function (f, i) { note(f, i * 0.08, 0.5, { type: "triangle", vol: 0.1 }); });
-      [523, 659, 784, 1047].forEach(function (f) { note(f, 0.55, 1.6, { type: "triangle", vol: 0.07 }); });
-      cloche(2093, 0.55, 0.06);
+      // un accord large et lent, des cloches qui s'éteignent doucement
+      [262, 392, 523, 659].forEach(function (f, i) { note(f, i * 0.12, 2.6, { type: "sine", vol: 0.06, attaque: 0.25 }); });
+      cloche(1047, 0.5, 0.06); cloche(1319, 0.85, 0.045); cloche(1568, 1.2, 0.035);
     },
     estActif: function () { return actif; },
     basculer: function () {
